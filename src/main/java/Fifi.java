@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class Fifi {
     public static void main(String[] args) {
-        ArrayList<String> tasks = new ArrayList<>();
+        ArrayList<Task> tasks = new ArrayList<>();
         String responseFormat = """
                     ____________________________________________________________
                     %s
@@ -32,26 +32,40 @@ public class Fifi {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String input = scanner.nextLine();
-            if (input.equals("bye")) {
+            String[] parts = input.split("\\s+");
+            String command = parts[0];
+            if (command.equals("bye")) {
                 System.out.printf(responseFormat, "BaiBai! Hope to see you soon ^^");
                 break;
             }
-            if (input.equals("list")) {
-                StringBuilder listed_tasks = new StringBuilder();
+            if (command.equals("list")) {
+                StringBuilder printedTasks = new StringBuilder();
                 for (int i = 0; i < tasks.size(); i++) {
                     if (i > 0) {
-                        listed_tasks.append("\n    ");
+                        printedTasks.append("\n    ");
                     }
-                    listed_tasks.append(i + 1)
+                    printedTasks.append(i + 1)
                                 .append(". ")
-                                .append(tasks.get(i));
+                                .append(tasks.get(i).toString());
                 }
-                System.out.printf(responseFormat, listed_tasks);
+                System.out.printf(responseFormat, String.format("Here are the tasks in your list: \n    %s", printedTasks));
+
+            } else if (command.equals("mark")) {
+                int taskNumber = Integer.parseInt(parts[1]) - 1; // -1 to convert back from 1-indexed (for user) to 0-indexed for tasks arraylist
+                Task currentTask = tasks.get(taskNumber);
+                currentTask.mark();
+                System.out.printf(responseFormat, String.format("Nice! I've marked this task as done:\n   %s", currentTask));
+
+            } else if (command.equals("unmark")) {
+                int taskNumber = Integer.parseInt(parts[1]) - 1; // -1 to convert back from 1-indexed (for user) to 0-indexed for tasks arraylist
+                Task currentTask = tasks.get(taskNumber);
+                currentTask.unmark();
+                System.out.printf(responseFormat, String.format("OK, I've marked this task as not done yet:\n     %s", currentTask));
+
             } else if (tasks.size() < 100) {
-                tasks.add(input);
+                tasks.add(new Task(false, input));
                 System.out.printf(responseFormat, String.format("added: %s", input));
             }
-
         }
     }
 }
