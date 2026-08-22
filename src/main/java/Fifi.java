@@ -7,6 +7,27 @@ import java.util.ArrayList;
 
 
 public class Fifi {
+    private enum CommandType {
+        BYE("bye"),
+        LIST("list"),
+        TODO("todo"),
+        DEADLINE("deadline"),
+        EVENT("event"),
+        MARK("mark"),
+        UNMARK("unmark"),
+        DELETE("delete");
+
+        private final String commandName;
+
+        CommandType(String commandName) {
+            this.commandName = commandName;
+        }
+
+        private String getCommandName() {
+            return this.commandName;
+        }
+    }
+
     public static void main(String[] args) {
         ArrayList<Task> tasks = new ArrayList<>();
         String line = "____________________________________________________________";
@@ -31,7 +52,6 @@ public class Fifi {
             String input = scanner.nextLine();
             String command = input.split(" ", 2)[0];
             try {
-
                 switch (command) {
                     case "bye" -> {
                         System.out.printf(responseFormat, "BaiBai! Hope to see you soon ^^");
@@ -100,9 +120,21 @@ public class Fifi {
                         ));
                     }
 
+                    case "delete" -> {
+                        int taskNumber = Integer.parseInt(input.substring("delete".length()).trim()) - 1; // -1 to convert user 1-indexed input to 0-indexed tasks
+                        Task removedTask = tasks.remove(taskNumber);
+                        System.out.printf(responseFormat,
+                                String.format(
+                                """
+                                Got it. I've removed this task:
+                                    %s
+                                Now you have %d tasks in the list ^^.\
+                                """, removedTask, tasks.size()));
+                    }
+
                     default -> throw new InvalidCommandException("""
                                 UhOh, this command is invalid, please enter a valid one!
-                                Valid commands include "list, todo, event, deadline, mark, unmark"\
+                                Valid commands include "list, todo, event, deadline, mark, unmark, delete"\
                                 """);
 
                 }
@@ -119,12 +151,22 @@ public class Fifi {
                     You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
                     """);
         }
-        String name = input.substring("event ".length(), input.indexOf("/from")).trim();
-        String from = input.substring(input.indexOf("/from") + 5, input.indexOf("/to")).trim();
-        String to = input.substring(input.indexOf("/to") + 3).trim();
+
+        if (!input.contains("/to") || input.substring(input.indexOf("/to") + 3).trim().isEmpty()) {
+            throw new InvalidDescriptionException("Oops! You did not provide an end date for the event");
+        }
+
+        if (!input.contains("/from") || input.substring(input.indexOf("/from") + 5, input.indexOf("/to")).trim().isEmpty()) {
+            throw new InvalidDescriptionException("Oops! You did not provide a start date for the event");
+        }
+
+        String name = input.substring("event".length(), input.indexOf("/from")).trim();
         if (name.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty event name");
         }
+
+        String from = input.substring(input.indexOf("/from") + 5, input.indexOf("/to")).trim();
+        String to = input.substring(input.indexOf("/to") + 3).trim();
         return new Event(false, name, from, to);
     }
 
@@ -135,7 +177,7 @@ public class Fifi {
                     You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
                     """);
         }
-        String name = input.substring("todo ".length());
+        String name = input.substring("todo".length()).trim();
         if (name.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty todo name");
         }
@@ -149,11 +191,16 @@ public class Fifi {
                     You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
                     """);
         }
-        String name = input.substring("deadline ".length(), input.indexOf("/by")).trim();
-        String deadline = input.substring(input.indexOf("/by") + 3).trim();
+
+        String deadlineDate = input.substring(input.indexOf("/by") + 3).trim();
+
+        if (!input.contains("/by") || deadlineDate.isEmpty()) {
+            throw new InvalidDescriptionException("Oops! You did not provide a date for the deadline");
+        }
+        String name = input.substring("deadline".length(), input.indexOf("/by")).trim();
         if (name.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty deadline name");
         }
-        return new Deadline(false, name, deadline);
+        return new Deadline(false, name, deadlineDate);
     }
 }

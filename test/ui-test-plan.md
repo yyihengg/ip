@@ -209,7 +209,63 @@ How may I help?
 ____________________________________________________________
 ____________________________________________________________
 UhOh, this command is invalid, please enter a valid one!
-Valid commands include "list, todo, event, deadline, mark, unmark"
+Valid commands include "list, todo, event, deadline, mark, unmark, delete"
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Deletes Task And Renumbers List
+
+Aim: Check that delete removes the requested task and that list displays the remaining tasks with updated numbering.
+
+Inputs:
+```text
+todo read book
+deadline return book /by Sunday
+event project meeting /from Mon 2pm /to 4pm
+delete 2
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] read book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[D][ ] return book (by: Sunday)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[E][ ] project meeting (from: Mon 2pm to: 4pm)
+Now you have 3 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've removed this task:
+    [D][ ] return book (by: Sunday)
+Now you have 2 tasks in the list ^^.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] read book
+2. [E][ ] project meeting (from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
