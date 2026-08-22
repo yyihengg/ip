@@ -1,12 +1,12 @@
 public class Task {
-    private boolean marked;
-    private final String name;
+    protected boolean marked;
+    protected final String name;
 
     Task(boolean marked, String name) {
         this.marked = marked;
         this.name = name;
     }
-    public boolean getMarked() {
+    public boolean isMarked() {
         return this.marked;
     }
 
@@ -24,7 +24,7 @@ public class Task {
 
     @Override
     public String toString() {
-        if (this.marked) {
+        if (this.isMarked()) {
             return String.format("[X] %s", getName());
         }
         return String.format("[ ] %s", getName());
