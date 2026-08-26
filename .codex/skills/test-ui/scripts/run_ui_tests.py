@@ -19,6 +19,7 @@ class TestCase:
     aim: str
     inputs: str
     expected: str
+    expected_data_file: str | None
 
 
 def normalize_newlines(text: str) -> str:
@@ -31,6 +32,13 @@ def read_labeled_block(section: str, label: str) -> str:
     if not match:
         raise ValueError(f"Missing fenced text block after '{label}:'")
     return normalize_newlines(match.group(1))
+
+
+def read_optional_labeled_block(section: str, label: str) -> str | None:
+    try:
+        return read_labeled_block(section, label)
+    except ValueError:
+        return None
 
 
 def parse_plan(plan_path: Path) -> list[TestCase]:
@@ -55,6 +63,7 @@ def parse_plan(plan_path: Path) -> list[TestCase]:
                 aim=aim_match.group(1),
                 inputs=read_labeled_block(section, "Inputs"),
                 expected=read_labeled_block(section, "Expected output"),
+                expected_data_file=read_optional_labeled_block(section, "Expected data file"),
             )
         )
 
@@ -131,6 +140,19 @@ def run_case(
     return result.returncode, normalize_newlines(result.stdout), normalize_newlines(result.stderr)
 
 
+def clear_data_file(repo_root: Path) -> None:
+    data_file = repo_root / "data" / "duke.txt"
+    if data_file.exists():
+        data_file.unlink()
+
+
+def read_data_file(repo_root: Path) -> str:
+    data_file = repo_root / "data" / "duke.txt"
+    if not data_file.exists():
+        return ""
+    return normalize_newlines(data_file.read_text(encoding="utf-8"))
+
+
 def print_transcript(case: TestCase, actual: str) -> None:
     print(f"## {case.name}")
     print()
@@ -189,6 +211,33 @@ def print_failure(case: TestCase, expected: str, actual: str, stderr: str, retur
     print("```")
 
 
+def print_data_file_failure(case: TestCase, expected: str, actual: str) -> None:
+    print(f"FAILED: {case.name}")
+    print(f"Aim: {case.aim}")
+    print()
+    print("Expected data file:")
+    print("```text")
+    print(expected)
+    print("```")
+    print()
+    print("Actual data file:")
+    print("```text")
+    print(actual)
+    print("```")
+    print()
+    print("Diff:")
+    print("```diff")
+    for line in difflib.unified_diff(
+        expected.splitlines(),
+        actual.splitlines(),
+        fromfile="expected-data-file",
+        tofile="actual-data-file",
+        lineterm="",
+    ):
+        print(line)
+    print("```")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run console UI tests from a Markdown test plan.")
     parser.add_argument("--repo-root", default=".", help="Repository root directory.")
@@ -210,11 +259,18 @@ def main() -> int:
         compile_sources(repo_root, build_dir, args.java_home)
 
         for case in cases:
+            clear_data_file(repo_root)
             returncode, actual, stderr = run_case(repo_root, build_dir, args.main_class, case, args.java_home)
             expected = normalize_newlines(case.expected)
             if returncode != 0 or actual != expected:
                 print_failure(case, expected, actual, stderr, returncode)
                 return 1
+            if case.expected_data_file is not None:
+                actual_data_file = read_data_file(repo_root)
+                expected_data_file = normalize_newlines(case.expected_data_file)
+                if actual_data_file != expected_data_file:
+                    print_data_file_failure(case, expected_data_file, actual_data_file)
+                    return 1
             print_transcript(case, actual)
 
         print(f"PASS: {len(cases)} UI test case(s) passed.")

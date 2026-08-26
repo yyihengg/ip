@@ -65,6 +65,11 @@ ____________________________________________________________
 
 ```
 
+Expected data file:
+```text
+T | 0 | borrow book
+```
+
 ## Adds Deadline And Lists
 
 Aim: Check that the deadline command stores a deadline task and list displays its by value.
@@ -102,6 +107,11 @@ ____________________________________________________________
 
 ```
 
+Expected data file:
+```text
+D | 0 | return book | Sunday
+```
+
 ## Adds Event And Lists
 
 Aim: Check that the event command stores an event task and list displays its from and to values.
@@ -137,6 +147,11 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
+```
+
+Expected data file:
+```text
+E | 0 | project meeting | Mon 2pm | 4pm
 ```
 
 ## Marks And Unmarks Task
@@ -184,6 +199,11 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
+```
+
+Expected data file:
+```text
+T | 0 | borrow book
 ```
 
 ## Rejects Invalid Command
@@ -271,6 +291,12 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
+```
+
+Expected data file:
+```text
+T | 0 | read book
+E | 0 | project meeting | Mon 2pm | 4pm
 ```
 
 ## Rejects Empty Todo Name

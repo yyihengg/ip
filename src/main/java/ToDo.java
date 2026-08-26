@@ -1,3 +1,6 @@
+/**
+ * Represents a task without any date or time.
+ */
 public class ToDo extends Task{
     ToDo(boolean marked, String name) {
         super(marked, name);
