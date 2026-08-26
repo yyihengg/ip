@@ -159,6 +159,36 @@ Expected data file:
 D | 0 | return book | Sunday
 ```
 
+## Rejects Deadline Without Date
+
+Aim: Check that a deadline command without /by shows the missing deadline date message.
+
+Inputs:
+```text
+deadline return book
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a date for the deadline
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
 ## Adds Event And Lists
 
 Aim: Check that the event command stores an event task and list displays its from and to values.
@@ -199,6 +229,66 @@ ____________________________________________________________
 Expected data file:
 ```text
 E | 0 | project meeting | Mon 2pm | 4pm
+```
+
+## Rejects Event Without Start
+
+Aim: Check that an event command without /from shows the missing event start date message.
+
+Inputs:
+```text
+event project meeting /to 4pm
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a start date for the event
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Rejects Event Without End
+
+Aim: Check that an event command without /to shows the missing event end date message.
+
+Inputs:
+```text
+event project meeting /from Mon 2pm
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide an end date for the event
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
 ```
 
 ## Marks And Unmarks Task
