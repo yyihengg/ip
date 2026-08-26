@@ -26,7 +26,7 @@ public class Event extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("E | %s | %s | %s | %s", getSaveStatus(), getName(), getFrom(), getTo());
+        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getName(), getFrom(), getTo());
     }
 
     @Override

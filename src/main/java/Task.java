@@ -22,7 +22,7 @@ public class Task {
      *
      * @return the status value used when saving the task to disk
      */
-    protected String getSaveStatus() {
+    protected String getMarkedStatus() {
         return this.isMarked() ? "1" : "0";
     }
 
@@ -40,7 +40,7 @@ public class Task {
      * @return the saved representation of this task
      */
     public String toFileString() {
-        return String.format("T | %s | %s", getSaveStatus(), getName());
+        return String.format("T | %s | %s", getMarkedStatus(), getName());
     }
 
     @Override

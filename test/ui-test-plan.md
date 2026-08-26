@@ -28,6 +28,53 @@ ____________________________________________________________
 
 ```
 
+## Loads Existing Tasks
+
+Aim: Check that the chatbot loads saved todo, deadline, and event tasks from the data file when it starts.
+
+Initial data file:
+```text
+T | 1 | read book
+D | 0 | return book | Sunday
+E | 0 | project meeting | Mon 2pm | 4pm
+```
+
+Inputs:
+```text
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][X] read book
+2. [D][ ] return book (by: Sunday)
+3. [E][ ] project meeting (from: Mon 2pm to: 4pm)
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+T | 1 | read book
+D | 0 | return book | Sunday
+E | 0 | project meeting | Mon 2pm | 4pm
+```
+
 ## Adds Todo And Lists
 
 Aim: Check that the todo command stores a todo task and list displays it with the todo marker.

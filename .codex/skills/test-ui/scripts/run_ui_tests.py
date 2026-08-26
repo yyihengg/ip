@@ -17,6 +17,7 @@ from pathlib import Path
 class TestCase:
     name: str
     aim: str
+    initial_data_file: str | None
     inputs: str
     expected: str
     expected_data_file: str | None
@@ -61,6 +62,7 @@ def parse_plan(plan_path: Path) -> list[TestCase]:
             TestCase(
                 name=name,
                 aim=aim_match.group(1),
+                initial_data_file=read_optional_labeled_block(section, "Initial data file"),
                 inputs=read_labeled_block(section, "Inputs"),
                 expected=read_labeled_block(section, "Expected output"),
                 expected_data_file=read_optional_labeled_block(section, "Expected data file"),
@@ -144,6 +146,12 @@ def clear_data_file(repo_root: Path) -> None:
     data_file = repo_root / "data" / "duke.txt"
     if data_file.exists():
         data_file.unlink()
+
+
+def write_data_file(repo_root: Path, content: str) -> None:
+    data_file = repo_root / "data" / "duke.txt"
+    data_file.parent.mkdir(parents=True, exist_ok=True)
+    data_file.write_text(content, encoding="utf-8")
 
 
 def read_data_file(repo_root: Path) -> str:
@@ -260,6 +268,8 @@ def main() -> int:
 
         for case in cases:
             clear_data_file(repo_root)
+            if case.initial_data_file is not None:
+                write_data_file(repo_root, case.initial_data_file)
             returncode, actual, stderr = run_case(repo_root, build_dir, args.main_class, case, args.java_home)
             expected = normalize_newlines(case.expected)
             if returncode != 0 or actual != expected:

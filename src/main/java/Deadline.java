@@ -19,7 +19,7 @@ public class Deadline extends Task{
      */
     @Override
     public String toFileString() {
-        return String.format("D | %s | %s | %s", getSaveStatus(), getName(), getDueDate());
+        return String.format("D | %s | %s | %s", getMarkedStatus(), getName(), getDueDate());
     }
 
     @Override

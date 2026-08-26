@@ -30,7 +30,7 @@ public class Fifi {
     }
 
     public static void main(String[] args) {
-        ArrayList<Task> tasks = new ArrayList<>();
+        ArrayList<Task> tasks = loadTasks();
         String line = "____________________________________________________________";
         String responseFormat = line + "%n"
                 + "%s%n"
@@ -155,6 +155,14 @@ public class Fifi {
 
     private static void saveTasks(ArrayList<Task> tasks) throws IOException {
         Storage.saveTasks(tasks);
+    }
+
+    private static ArrayList<Task> loadTasks() {
+        try {
+            return Storage.loadTasks();
+        } catch (IOException e) {
+            return new ArrayList<>();
+        }
     }
 
     private static Task getEvent(ArrayList<Task> tasks, String input) throws ExcessiveTaskException, InvalidDescriptionException{
