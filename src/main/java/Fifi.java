@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.ArrayList;
 
@@ -8,27 +10,6 @@ import java.util.ArrayList;
 
 
 public class Fifi {
-    private enum CommandType {
-        BYE("bye"),
-        LIST("list"),
-        TODO("todo"),
-        DEADLINE("deadline"),
-        EVENT("event"),
-        MARK("mark"),
-        UNMARK("unmark"),
-        DELETE("delete");
-
-        private final String commandName;
-
-        CommandType(String commandName) {
-            this.commandName = commandName;
-        }
-
-        private String getCommandName() {
-            return this.commandName;
-        }
-    }
-
     public static void main(String[] args) {
         ArrayList<Task> tasks = loadTasks();
         String line = "____________________________________________________________";
@@ -51,7 +32,7 @@ public class Fifi {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String input = scanner.nextLine();
-            String command = input.split(" ", 2)[0];
+            String command = Parser.parseCommand(input);
             try {
                 switch (command) {
                     case "bye" -> {
@@ -60,18 +41,12 @@ public class Fifi {
                     }
 
                     case "list" -> {
-                        StringBuilder printedTasks = new StringBuilder();
-                        for (int i = 0; i < tasks.size(); i++) {
-                            printedTasks.append("\n");
-                            printedTasks.append(i + 1)
-                                    .append(". ")
-                                    .append(tasks.get(i).toString());
-                        }
-                        System.out.printf(responseFormat, String.format("Here are the tasks in your list:%s", printedTasks));
+                        String taskString = getTaskListString(tasks);
+                        System.out.printf(responseFormat, String.format("Here are the tasks in your list:%s", taskString));
                     }
 
                     case "mark" -> {
-                        int taskNumber = Integer.parseInt(input.substring(4).trim()) - 1; // -1 to convert back from 1-indexed (for user) to 0-indexed for tasks arraylist
+                        int taskNumber = Parser.parseTaskNumber(input, "mark");
                         Task currentTask = tasks.get(taskNumber);
                         currentTask.mark();
                         saveTasks(tasks);
@@ -79,7 +54,7 @@ public class Fifi {
                     }
 
                     case "unmark" -> {
-                        int taskNumber = Integer.parseInt(input.substring(6).trim()) - 1; // -1 to convert back from 1-indexed (for user) to 0-indexed for tasks arraylist
+                        int taskNumber = Parser.parseTaskNumber(input, "unmark");
                         Task currentTask = tasks.get(taskNumber);
                         currentTask.unmark();
                         saveTasks(tasks);
@@ -88,7 +63,7 @@ public class Fifi {
                     }
 
                     case "todo" -> {
-                        Task newTask = getToDo(tasks, input);
+                        Task newTask = Parser.parseToDo(tasks, input);
                         tasks.add(newTask);
                         saveTasks(tasks);
                         System.out.printf(responseFormat, String.format(
@@ -101,7 +76,7 @@ public class Fifi {
                     }
 
                     case "deadline" -> {
-                        Task newTask = getDeadline(tasks, input);
+                        Task newTask = Parser.parseDeadline(tasks, input);
                         tasks.add(newTask);
                         saveTasks(tasks);
                         System.out.printf(responseFormat, String.format(
@@ -114,7 +89,7 @@ public class Fifi {
                     }
 
                     case "event" -> {
-                        Task newTask = getEvent(tasks, input);
+                        Task newTask = Parser.parseEvent(tasks, input);
                         tasks.add(newTask);
                         saveTasks(tasks);
                         System.out.printf(responseFormat, String.format(
@@ -127,7 +102,7 @@ public class Fifi {
                     }
 
                     case "delete" -> {
-                        int taskNumber = Integer.parseInt(input.substring("delete".length()).trim()) - 1; // -1 to convert user 1-indexed input to 0-indexed tasks
+                        int taskNumber = Parser.parseTaskNumber(input, "delete");
                         Task removedTask = tasks.remove(taskNumber);
                         saveTasks(tasks);
                         System.out.printf(responseFormat,
@@ -139,9 +114,15 @@ public class Fifi {
                                 """, removedTask, tasks.size()));
                     }
 
+                    case "show" -> {
+                        LocalDate showDate = Parser.parseShowDate(input);
+                        String taskString = getTaskListString(getTasksOccurringOn(tasks, showDate));
+                        System.out.printf(responseFormat, String.format("Here are the tasks occurring on your specified date:%s", taskString));
+                    }
+
                     default -> throw new InvalidCommandException("""
                                 UhOh, this command is invalid, please enter a valid one!
-                                Valid commands include "list, todo, event, deadline, mark, unmark, delete"\
+                                Valid commands include "list, todo, event, deadline, mark, unmark, delete, show"\
                                 """);
 
                 }
@@ -149,6 +130,9 @@ public class Fifi {
                 System.out.printf(responseFormat, e.getMessage());
             } catch (IOException e) {
                 System.out.printf(responseFormat, "Oops! I could not save your tasks to the hard disk.");
+            } catch (DateTimeException e) {
+                System.out.printf(responseFormat,
+                        "Oops! Please use yyyy-MM-dd for dates.");
             }
         }
     }
@@ -165,63 +149,44 @@ public class Fifi {
         }
     }
 
-    private static Task getEvent(ArrayList<Task> tasks, String input) throws ExcessiveTaskException, InvalidDescriptionException{
-        if (tasks.size() >= 100) {
-            throw new ExcessiveTaskException(
-                    """
-                    You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
-                    """);
+    private static String getTaskListString(ArrayList<Task> tasks) {
+        StringBuilder taskString = new StringBuilder();
+        for (int i = 0; i < tasks.size(); i++) {
+            taskString.append("\n");
+            taskString.append(i + 1)
+                    .append(". ")
+                    .append(tasks.get(i).toString());
         }
-
-        if (!input.contains("/to") || input.substring(input.indexOf("/to") + 3).trim().isEmpty()) {
-            throw new InvalidDescriptionException("Oops! You did not provide an end date for the event");
-        }
-
-        if (!input.contains("/from") || input.substring(input.indexOf("/from") + 5, input.indexOf("/to")).trim().isEmpty()) {
-            throw new InvalidDescriptionException("Oops! You did not provide a start date for the event");
-        }
-
-        String name = input.substring("event".length(), input.indexOf("/from")).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty event name");
-        }
-
-        String from = input.substring(input.indexOf("/from") + 5, input.indexOf("/to")).trim();
-        String to = input.substring(input.indexOf("/to") + 3).trim();
-        return new Event(false, name, from, to);
+        return taskString.toString();
     }
 
-    private static Task getToDo(ArrayList<Task> tasks, String input) throws ExcessiveTaskException, InvalidDescriptionException {
-        if (tasks.size() >= 100) {
-            throw new ExcessiveTaskException(
-                    """
-                    You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
-                    """);
+    private static ArrayList<Task> getTasksOccurringOn(ArrayList<Task> tasks, LocalDate showDate) {
+        ArrayList<Task> occurringTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (isOccurringOn(task, showDate)) {
+                occurringTasks.add(task);
+            }
         }
-        String name = input.substring("todo".length()).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty todo name");
-        }
-        return new ToDo(false, name);
+        return occurringTasks;
     }
 
-    private static Task getDeadline(ArrayList<Task> tasks, String input) throws ExcessiveTaskException, InvalidDescriptionException {
-        if (tasks.size() >= 100) {
-            throw new ExcessiveTaskException(
-                    """
-                    You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
-                    """);
+    private static boolean isOccurringOn(Task task, LocalDate showDate) {
+        if (task instanceof Deadline deadline) {
+            return isDeadlineOccurringOn(deadline, showDate);
         }
+        if (task instanceof Event event) {
+            return isEventOccurringOn(event, showDate);
+        }
+        return false;
+    }
 
-        String deadlineDate = input.substring(input.indexOf("/by") + 3).trim();
+    private static boolean isDeadlineOccurringOn(Deadline deadline, LocalDate showDate) {
+        return deadline.getDueDate().isEqual(showDate);
+    }
 
-        if (!input.contains("/by") || deadlineDate.isEmpty()) {
-            throw new InvalidDescriptionException("Oops! You did not provide a date for the deadline");
-        }
-        String name = input.substring("deadline".length(), input.indexOf("/by")).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty deadline name");
-        }
-        return new Deadline(false, name, deadlineDate);
+    private static boolean isEventOccurringOn(Event event, LocalDate showDate) {
+        LocalDate startDate = event.getStart();
+        LocalDate endDate = event.getEnd();
+        return !showDate.isBefore(startDate) && !showDate.isAfter(endDate);
     }
 }

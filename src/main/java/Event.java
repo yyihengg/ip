@@ -1,22 +1,24 @@
+import java.time.LocalDate;
+
 /**
  * Represents a task that happens from one date or time to another.
  */
 public class Event extends Task {
-    protected String from;
-    protected String to;
+    protected LocalDate start;
+    protected LocalDate end;
 
-    Event(boolean marked, String name, String from, String to) {
+    Event(boolean marked, String name, LocalDate start, LocalDate end) {
         super(marked, name);
-        this.from = from;
-        this.to = to;
+        this.start = start;
+        this.end = end;
     }
 
-    public String getFrom() {
-        return this.from;
+    public LocalDate getStart() {
+        return this.start;
     }
 
-    public String getTo() {
-        return this.to;
+    public LocalDate getEnd() {
+        return this.end;
     }
 
     /**
@@ -26,11 +28,13 @@ public class Event extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getName(), getFrom(), getTo());
+        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getName(),
+                Parser.formatDateForStorage(getStart()), Parser.formatDateForStorage(getEnd()));
     }
 
     @Override
     public String toString() {
-        return String.format("[E]" + super.toString() + " (from: %s to: %s)", getFrom(), getTo());
+        return String.format("[E]" + super.toString() + " (from: %s to: %s)",
+                Parser.formatDateForDisplay(getStart()), Parser.formatDateForDisplay(getEnd()));
     }
 }

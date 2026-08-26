@@ -35,8 +35,8 @@ Aim: Check that the chatbot loads saved todo, deadline, and event tasks from the
 Initial data file:
 ```text
 T | 1 | read book
-D | 0 | return book | Sunday
-E | 0 | project meeting | Mon 2pm | 4pm
+D | 0 | return book | 2019-12-02
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
 Inputs:
@@ -59,8 +59,8 @@ ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1. [T][X] read book
-2. [D][ ] return book (by: Sunday)
-3. [E][ ] project meeting (from: Mon 2pm to: 4pm)
+2. [D][ ] return book (by: Dec 02 2019)
+3. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -71,8 +71,8 @@ ____________________________________________________________
 Expected data file:
 ```text
 T | 1 | read book
-D | 0 | return book | Sunday
-E | 0 | project meeting | Mon 2pm | 4pm
+D | 0 | return book | 2019-12-02
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
 ## Adds Todo And Lists
@@ -123,7 +123,7 @@ Aim: Check that the deadline command stores a deadline task and list displays it
 
 Inputs:
 ```text
-deadline return book /by Sunday
+deadline return book /by 2019-12-02
 list
 bye
 ```
@@ -141,12 +141,12 @@ How may I help?
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-[D][ ] return book (by: Sunday)
+[D][ ] return book (by: Dec 02 2019)
 Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
-1. [D][ ] return book (by: Sunday)
+1. [D][ ] return book (by: Dec 02 2019)
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -156,7 +156,37 @@ ____________________________________________________________
 
 Expected data file:
 ```text
-D | 0 | return book | Sunday
+D | 0 | return book | 2019-12-02
+```
+
+## Rejects Deadline Without Date
+
+Aim: Check that a deadline command without /by shows the missing deadline date message.
+
+Inputs:
+```text
+deadline return book
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a date for the deadline
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
 ```
 
 ## Adds Event And Lists
@@ -165,7 +195,7 @@ Aim: Check that the event command stores an event task and list displays its fro
 
 Inputs:
 ```text
-event project meeting /from Mon 2pm /to 4pm
+event project meeting /from 2019-12-02 /to 2019-12-04
 list
 bye
 ```
@@ -183,12 +213,12 @@ How may I help?
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-[E][ ] project meeting (from: Mon 2pm to: 4pm)
+[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)
 Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
-1. [E][ ] project meeting (from: Mon 2pm to: 4pm)
+1. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -198,7 +228,142 @@ ____________________________________________________________
 
 Expected data file:
 ```text
-E | 0 | project meeting | Mon 2pm | 4pm
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
+```
+
+## Shows Tasks On Date
+
+Aim: Check that show lists deadlines on that date and events whose date range includes that date.
+
+Initial data file:
+```text
+T | 0 | read book
+D | 0 | return book | 2019-12-02
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
+```
+
+Inputs:
+```text
+show 2019-12-03
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks occurring on your specified date:
+1. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+T | 0 | read book
+D | 0 | return book | 2019-12-02
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
+```
+
+## Rejects Invalid Show Date
+
+Aim: Check that show with an invalid date format shows the date format message.
+
+Inputs:
+```text
+show tomorrow
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! Please use yyyy-MM-dd for dates.
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Rejects Event Without Start
+
+Aim: Check that an event command without /from shows the missing event start date message.
+
+Inputs:
+```text
+event project meeting /to 2019-12-04
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a start date for the event
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Rejects Event Without End
+
+Aim: Check that an event command without /to shows the missing event end date message.
+
+Inputs:
+```text
+event project meeting /from 2019-12-02
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide an end date for the event
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
 ```
 
 ## Marks And Unmarks Task
@@ -276,7 +441,7 @@ How may I help?
 ____________________________________________________________
 ____________________________________________________________
 UhOh, this command is invalid, please enter a valid one!
-Valid commands include "list, todo, event, deadline, mark, unmark, delete"
+Valid commands include "list, todo, event, deadline, mark, unmark, delete, show"
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -291,8 +456,8 @@ Aim: Check that delete removes the requested task and that list displays the rem
 Inputs:
 ```text
 todo read book
-deadline return book /by Sunday
-event project meeting /from Mon 2pm /to 4pm
+deadline return book /by 2019-12-02
+event project meeting /from 2019-12-02 /to 2019-12-04
 delete 2
 list
 bye
@@ -316,23 +481,23 @@ Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-[D][ ] return book (by: Sunday)
+[D][ ] return book (by: Dec 02 2019)
 Now you have 2 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've added this task:
-[E][ ] project meeting (from: Mon 2pm to: 4pm)
+[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)
 Now you have 3 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 Got it. I've removed this task:
-    [D][ ] return book (by: Sunday)
+    [D][ ] return book (by: Dec 02 2019)
 Now you have 2 tasks in the list ^^.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
 1. [T][ ] read book
-2. [E][ ] project meeting (from: Mon 2pm to: 4pm)
+2. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -343,7 +508,7 @@ ____________________________________________________________
 Expected data file:
 ```text
 T | 0 | read book
-E | 0 | project meeting | Mon 2pm | 4pm
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
 ## Rejects Empty Todo Name
@@ -382,7 +547,7 @@ Aim: Check that a deadline command with no task name before /by shows the empty 
 
 Inputs:
 ```text
-deadline    /by Sunday
+deadline    /by 2019-12-02
 bye
 ```
 
@@ -412,7 +577,7 @@ Aim: Check that an event command with no task name before /from shows the empty 
 
 Inputs:
 ```text
-event    /from Mon 2pm /to 4pm
+event    /from 2019-12-02 /to 2019-12-04
 bye
 ```
 
