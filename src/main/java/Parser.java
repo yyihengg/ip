@@ -1,11 +1,67 @@
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Converts raw user input into commands, task numbers, and task objects.
  */
 public class Parser {
-    /** Maximum number of tasks allowed in the chatbot's task list. */
+    /**
+     * Maximum number of tasks allowed in the chatbot's task list.
+     */
     private static final int MAX_TASKS = 100;
+    private static final DateTimeFormatter INPUT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DISPLAY_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
+
+    /**
+     * Converts a date string into a {@code LocalDate}.
+     *
+     * @param input the date string in yyyy-MM-dd format
+     * @return the date represented by the input
+     * @throws DateTimeException if the input does not match the required format
+     */
+    public static LocalDate parseDate(String input) throws DateTimeException {
+        return LocalDate.parse(input, INPUT_DATE_FORMATTER);
+    }
+
+    /**
+     * Converts the date in a show command into a {@code LocalDate}.
+     *
+     * @param input the full line typed by the user
+     * @return the date requested by the user
+     * @throws InvalidDescriptionException if the show date is missing
+     * @throws DateTimeException if the date does not match the required format
+     */
+    public static LocalDate parseShowDate(String input) throws InvalidDescriptionException, DateTimeException {
+        String date = input.substring("show".length()).trim();
+        if (date.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You did not provide a date to show");
+        }
+        return parseDate(date);
+    }
+
+    /**
+     * Converts a date back into the format accepted by the chatbot.
+     *
+     * @param date the date to save
+     * @return the saved date string
+     */
+    public static String formatDateForStorage(LocalDate date) {
+        return date.format(INPUT_DATE_FORMATTER);
+    }
+
+    /**
+     * Converts a date into the format printed to the user.
+     *
+     * @param date the date to display
+     * @return the display date string
+     */
+    public static String formatDateForDisplay(LocalDate date) {
+        return date.format(DISPLAY_DATE_FORMATTER);
+    }
 
     /**
      * Returns the command word from the user's input.
@@ -58,7 +114,7 @@ public class Parser {
      * @throws InvalidDescriptionException if the deadline name or date is missing
      */
     public static Task parseDeadline(ArrayList<Task> tasks, String input)
-            throws ExcessiveTaskException, InvalidDescriptionException {
+            throws ExcessiveTaskException, InvalidDescriptionException, DateTimeException {
         checkTaskLimit(tasks);
 
         int byIndex = input.indexOf("/by");
@@ -72,7 +128,7 @@ public class Parser {
         }
 
         String deadlineDate = input.substring(byIndex + "/by".length()).trim();
-        return new Deadline(false, name, deadlineDate);
+        return new Deadline(false, name, parseDate(deadlineDate));
     }
 
     /**
@@ -105,7 +161,7 @@ public class Parser {
 
         String from = input.substring(fromIndex + "/from".length(), toIndex).trim();
         String to = input.substring(toIndex + "/to".length()).trim();
-        return new Event(false, name, from, to);
+        return new Event(false, name, parseDate(from), parseDate(to));
     }
 
     private static void checkTaskLimit(ArrayList<Task> tasks) throws ExcessiveTaskException {

@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.ArrayList;
 
@@ -39,14 +41,8 @@ public class Fifi {
                     }
 
                     case "list" -> {
-                        StringBuilder printedTasks = new StringBuilder();
-                        for (int i = 0; i < tasks.size(); i++) {
-                            printedTasks.append("\n");
-                            printedTasks.append(i + 1)
-                                    .append(". ")
-                                    .append(tasks.get(i).toString());
-                        }
-                        System.out.printf(responseFormat, String.format("Here are the tasks in your list:%s", printedTasks));
+                        String taskString = getTaskListString(tasks);
+                        System.out.printf(responseFormat, String.format("Here are the tasks in your list:%s", taskString));
                     }
 
                     case "mark" -> {
@@ -118,9 +114,15 @@ public class Fifi {
                                 """, removedTask, tasks.size()));
                     }
 
+                    case "show" -> {
+                        LocalDate showDate = Parser.parseShowDate(input);
+                        String taskString = getTaskListString(getTasksOccurringOn(tasks, showDate));
+                        System.out.printf(responseFormat, String.format("Here are the tasks occurring on your specified date:%s", taskString));
+                    }
+
                     default -> throw new InvalidCommandException("""
                                 UhOh, this command is invalid, please enter a valid one!
-                                Valid commands include "list, todo, event, deadline, mark, unmark, delete"\
+                                Valid commands include "list, todo, event, deadline, mark, unmark, delete, show"\
                                 """);
 
                 }
@@ -128,6 +130,9 @@ public class Fifi {
                 System.out.printf(responseFormat, e.getMessage());
             } catch (IOException e) {
                 System.out.printf(responseFormat, "Oops! I could not save your tasks to the hard disk.");
+            } catch (DateTimeException e) {
+                System.out.printf(responseFormat,
+                        "Oops! Please use yyyy-MM-dd for dates.");
             }
         }
     }
@@ -142,5 +147,46 @@ public class Fifi {
         } catch (IOException e) {
             return new ArrayList<>();
         }
+    }
+
+    private static String getTaskListString(ArrayList<Task> tasks) {
+        StringBuilder taskString = new StringBuilder();
+        for (int i = 0; i < tasks.size(); i++) {
+            taskString.append("\n");
+            taskString.append(i + 1)
+                    .append(". ")
+                    .append(tasks.get(i).toString());
+        }
+        return taskString.toString();
+    }
+
+    private static ArrayList<Task> getTasksOccurringOn(ArrayList<Task> tasks, LocalDate showDate) {
+        ArrayList<Task> occurringTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (isOccurringOn(task, showDate)) {
+                occurringTasks.add(task);
+            }
+        }
+        return occurringTasks;
+    }
+
+    private static boolean isOccurringOn(Task task, LocalDate showDate) {
+        if (task instanceof Deadline deadline) {
+            return isDeadlineOccurringOn(deadline, showDate);
+        }
+        if (task instanceof Event event) {
+            return isEventOccurringOn(event, showDate);
+        }
+        return false;
+    }
+
+    private static boolean isDeadlineOccurringOn(Deadline deadline, LocalDate showDate) {
+        return deadline.getDueDate().isEqual(showDate);
+    }
+
+    private static boolean isEventOccurringOn(Event event, LocalDate showDate) {
+        LocalDate startDate = event.getStart();
+        LocalDate endDate = event.getEnd();
+        return !showDate.isBefore(startDate) && !showDate.isAfter(endDate);
     }
 }

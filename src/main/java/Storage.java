@@ -58,8 +58,9 @@ public class Storage {
         boolean isMarked = parts[1].equals("1");
 
         return switch (parts[0]) {
-            case "D" -> new Deadline(isMarked, parts[2], parts[3]);
-            case "E" -> new Event(isMarked, parts[2], parts[3], parts[4]);
+            case "D" -> new Deadline(isMarked, parts[2], Parser.parseDate(parts[3]));
+            case "E" -> new Event(isMarked, parts[2], Parser.parseDate(parts[3]),
+                    Parser.parseDate(parts[4]));
             default -> new ToDo(isMarked, parts[2]);
         };
     }

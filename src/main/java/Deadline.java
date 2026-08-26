@@ -1,14 +1,17 @@
+import java.time.LocalDate;
+
 /**
  * Represents a task that must be completed by a given date or time.
  */
 public class Deadline extends Task{
-    protected String dueDate;
-    Deadline(boolean marked, String name, String dueDate) {
+    protected LocalDate dueDate;
+
+    Deadline(boolean marked, String name, LocalDate dueDate) {
         super(marked, name);
         this.dueDate = dueDate;
     }
 
-    public String getDueDate() {
+    public LocalDate getDueDate() {
         return this.dueDate;
     }
 
@@ -19,11 +22,13 @@ public class Deadline extends Task{
      */
     @Override
     public String toFileString() {
-        return String.format("D | %s | %s | %s", getMarkedStatus(), getName(), getDueDate());
+        return String.format("D | %s | %s | %s", getMarkedStatus(), getName(),
+                Parser.formatDateForStorage(getDueDate()));
     }
 
     @Override
     public String toString() {
-        return String.format("[D]" + super.toString() + " (by: %s)", getDueDate());
+        return String.format("[D]" + super.toString() + " (by: %s)",
+                Parser.formatDateForDisplay(getDueDate()));
     }
 }
