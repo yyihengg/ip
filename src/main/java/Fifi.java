@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.Scanner;
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ public class Fifi {
     }
 
     public static void main(String[] args) {
-        ArrayList<Task> tasks = new ArrayList<>();
+        ArrayList<Task> tasks = loadTasks();
         String line = "____________________________________________________________";
         String responseFormat = line + "%n"
                 + "%s%n"
@@ -73,6 +74,7 @@ public class Fifi {
                         int taskNumber = Integer.parseInt(input.substring(4).trim()) - 1; // -1 to convert back from 1-indexed (for user) to 0-indexed for tasks arraylist
                         Task currentTask = tasks.get(taskNumber);
                         currentTask.mark();
+                        saveTasks(tasks);
                         System.out.printf(responseFormat, String.format("Nice! I've marked this task as done:\n%s", currentTask));
                     }
 
@@ -80,6 +82,7 @@ public class Fifi {
                         int taskNumber = Integer.parseInt(input.substring(6).trim()) - 1; // -1 to convert back from 1-indexed (for user) to 0-indexed for tasks arraylist
                         Task currentTask = tasks.get(taskNumber);
                         currentTask.unmark();
+                        saveTasks(tasks);
                         System.out.printf(responseFormat, String.format("OK, I've marked this task as not done yet:\n%s", currentTask));
 
                     }
@@ -87,6 +90,7 @@ public class Fifi {
                     case "todo" -> {
                         Task newTask = getToDo(tasks, input);
                         tasks.add(newTask);
+                        saveTasks(tasks);
                         System.out.printf(responseFormat, String.format(
                                 "Got it. I've added this task:%n"
                                         + "%s%n"
@@ -99,6 +103,7 @@ public class Fifi {
                     case "deadline" -> {
                         Task newTask = getDeadline(tasks, input);
                         tasks.add(newTask);
+                        saveTasks(tasks);
                         System.out.printf(responseFormat, String.format(
                                 "Got it. I've added this task:%n"
                                         + "%s%n"
@@ -111,6 +116,7 @@ public class Fifi {
                     case "event" -> {
                         Task newTask = getEvent(tasks, input);
                         tasks.add(newTask);
+                        saveTasks(tasks);
                         System.out.printf(responseFormat, String.format(
                                 "Got it. I've added this task:%n"
                                         + "%s%n"
@@ -123,6 +129,7 @@ public class Fifi {
                     case "delete" -> {
                         int taskNumber = Integer.parseInt(input.substring("delete".length()).trim()) - 1; // -1 to convert user 1-indexed input to 0-indexed tasks
                         Task removedTask = tasks.remove(taskNumber);
+                        saveTasks(tasks);
                         System.out.printf(responseFormat,
                                 String.format(
                                 """
@@ -140,7 +147,21 @@ public class Fifi {
                 }
             } catch (FiFiException e) {
                 System.out.printf(responseFormat, e.getMessage());
+            } catch (IOException e) {
+                System.out.printf(responseFormat, "Oops! I could not save your tasks to the hard disk.");
             }
+        }
+    }
+
+    private static void saveTasks(ArrayList<Task> tasks) throws IOException {
+        Storage.saveTasks(tasks);
+    }
+
+    private static ArrayList<Task> loadTasks() {
+        try {
+            return Storage.loadTasks();
+        } catch (IOException e) {
+            return new ArrayList<>();
         }
     }
 
