@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.Scanner;
 import java.util.ArrayList;
 
 /**
@@ -11,38 +10,22 @@ import java.util.ArrayList;
 
 public class Fifi {
     public static void main(String[] args) {
+        Ui ui = new Ui();
         ArrayList<Task> tasks = loadTasks();
-        String line = "____________________________________________________________";
-        String responseFormat = line + "%n"
-                + "%s%n"
-                + line + "%n";
-        String banner = """
-                _____ _  __ __
-                |  ___(_)/ _(_)
-                | |_  | | |_| |
-                |  _| | |  _| |
-                |_|   |_|_| |_|
-                """;
-        System.out.print(banner);
-        String greetings = line + "\n"
-                + "Hello! My name is Fifi ^^\n"
-                + "How may I help?\n"
-                + line + "\n";
-        System.out.print(greetings);
-        Scanner scanner = new Scanner(System.in);
+        ui.showWelcome();
         while (true) {
-            String input = scanner.nextLine();
+            String input = ui.readCommand();
             String command = Parser.parseCommand(input);
             try {
                 switch (command) {
                     case "bye" -> {
-                        System.out.printf(responseFormat, "BaiBai! Hope to see you soon ^^");
+                        ui.showResponse("BaiBai! Hope to see you soon ^^");
                         return;
                     }
 
                     case "list" -> {
                         String taskString = getTaskListString(tasks);
-                        System.out.printf(responseFormat, String.format("Here are the tasks in your list:%s", taskString));
+                        ui.showResponse(String.format("Here are the tasks in your list:%s", taskString));
                     }
 
                     case "mark" -> {
@@ -50,7 +33,7 @@ public class Fifi {
                         Task currentTask = tasks.get(taskNumber);
                         currentTask.mark();
                         saveTasks(tasks);
-                        System.out.printf(responseFormat, String.format("Nice! I've marked this task as done:\n%s", currentTask));
+                        ui.showResponse(String.format("Nice! I've marked this task as done:\n%s", currentTask));
                     }
 
                     case "unmark" -> {
@@ -58,7 +41,7 @@ public class Fifi {
                         Task currentTask = tasks.get(taskNumber);
                         currentTask.unmark();
                         saveTasks(tasks);
-                        System.out.printf(responseFormat, String.format("OK, I've marked this task as not done yet:\n%s", currentTask));
+                        ui.showResponse(String.format("OK, I've marked this task as not done yet:\n%s", currentTask));
 
                     }
 
@@ -66,7 +49,7 @@ public class Fifi {
                         Task newTask = Parser.parseToDo(tasks, input);
                         tasks.add(newTask);
                         saveTasks(tasks);
-                        System.out.printf(responseFormat, String.format(
+                        ui.showResponse(String.format(
                                 "Got it. I've added this task:%n"
                                         + "%s%n"
                                         + "Now you have %d tasks in the list.",
@@ -79,7 +62,7 @@ public class Fifi {
                         Task newTask = Parser.parseDeadline(tasks, input);
                         tasks.add(newTask);
                         saveTasks(tasks);
-                        System.out.printf(responseFormat, String.format(
+                        ui.showResponse(String.format(
                                 "Got it. I've added this task:%n"
                                         + "%s%n"
                                         + "Now you have %d tasks in the list.",
@@ -92,7 +75,7 @@ public class Fifi {
                         Task newTask = Parser.parseEvent(tasks, input);
                         tasks.add(newTask);
                         saveTasks(tasks);
-                        System.out.printf(responseFormat, String.format(
+                        ui.showResponse(String.format(
                                 "Got it. I've added this task:%n"
                                         + "%s%n"
                                         + "Now you have %d tasks in the list.",
@@ -105,8 +88,7 @@ public class Fifi {
                         int taskNumber = Parser.parseTaskNumber(input, "delete");
                         Task removedTask = tasks.remove(taskNumber);
                         saveTasks(tasks);
-                        System.out.printf(responseFormat,
-                                String.format(
+                        ui.showResponse(String.format(
                                 """
                                 Got it. I've removed this task:
                                     %s
@@ -117,7 +99,8 @@ public class Fifi {
                     case "show" -> {
                         LocalDate showDate = Parser.parseShowDate(input);
                         String taskString = getTaskListString(getTasksOccurringOn(tasks, showDate));
-                        System.out.printf(responseFormat, String.format("Here are the tasks occurring on your specified date:%s", taskString));
+                        ui.showResponse(String.format(
+                                "Here are the tasks occurring on your specified date:%s", taskString));
                     }
 
                     default -> throw new InvalidCommandException("""
@@ -127,12 +110,11 @@ public class Fifi {
 
                 }
             } catch (FiFiException e) {
-                System.out.printf(responseFormat, e.getMessage());
+                ui.showResponse(e.getMessage());
             } catch (IOException e) {
-                System.out.printf(responseFormat, "Oops! I could not save your tasks to the hard disk.");
+                ui.showResponse("Oops! I could not save your tasks to the hard disk.");
             } catch (DateTimeException e) {
-                System.out.printf(responseFormat,
-                        "Oops! Please use yyyy-MM-dd for dates.");
+                ui.showResponse("Oops! Please use yyyy-MM-dd for dates.");
             }
         }
     }
