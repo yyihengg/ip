@@ -1,3 +1,5 @@
+package fifi;
+
 import java.util.Scanner;
 
 /**

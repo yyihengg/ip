@@ -1,5 +1,7 @@
+package fifi.exception;
+
 public class InvalidCommandException extends FiFiException {
-    InvalidCommandException(String message) {
+    public InvalidCommandException(String message) {
         super(message);
     }
 }

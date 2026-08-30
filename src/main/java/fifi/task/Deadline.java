@@ -1,4 +1,8 @@
+package fifi.task;
+
 import java.time.LocalDate;
+
+import fifi.Parser;
 
 /**
  * Represents a task that must be completed by a given date or time.
@@ -6,7 +10,7 @@ import java.time.LocalDate;
 public class Deadline extends Task{
     protected LocalDate dueDate;
 
-    Deadline(boolean marked, String name, LocalDate dueDate) {
+    public Deadline(boolean marked, String name, LocalDate dueDate) {
         super(marked, name);
         this.dueDate = dueDate;
     }

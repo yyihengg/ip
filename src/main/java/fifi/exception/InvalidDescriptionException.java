@@ -1,5 +1,7 @@
+package fifi.exception;
+
 public class InvalidDescriptionException extends FiFiException {
-    InvalidDescriptionException(String message) {
+    public InvalidDescriptionException(String message) {
         super(message);
     }
 }

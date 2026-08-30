@@ -1,9 +1,16 @@
+package fifi;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+
+import fifi.task.Deadline;
+import fifi.task.Event;
+import fifi.task.Task;
+import fifi.task.ToDo;
 
 /**
  * Handles loading and saving chatbot tasks on the hard disk.

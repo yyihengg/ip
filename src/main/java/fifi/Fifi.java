@@ -1,7 +1,15 @@
+package fifi;
+
 import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import fifi.exception.FiFiException;
+import fifi.exception.InvalidCommandException;
+import fifi.task.Deadline;
+import fifi.task.Event;
+import fifi.task.Task;
 
 /**
  * Entry point for the Fifi chatbot application.
