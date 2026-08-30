@@ -306,6 +306,36 @@ ____________________________________________________________
 
 ```
 
+## Rejects Non Existent Show Date
+
+Aim: Check that show with a non-existent calendar date shows the date format message.
+
+Inputs:
+```text
+show 2025-02-30
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! Please use yyyy-MM-dd for dates.
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
 ## Rejects Event Without Start
 
 Aim: Check that an event command without /from shows the missing event start date message.
