@@ -31,6 +31,7 @@ Ensure that Java 25 is used when running the application or build tasks. On macO
 ## Testing
 IMPORTANT: CHECK FOR CODE UPDATES THEN FOLLOW THE INSTRUCTIONS BELOW IF THERE ARE ANY CODE UPDATES:
 After each code update, review `test/ui-test-plan.md` and update it if the change affects console UI behavior, commands, expected output, or relevant edge cases.
+After each code update, update JUnit tests so they continue to cover the top ~50% highest-value methods, prioritizing complex, core, or critical business logic over simple getters and trivial formatting.
 After each code update, invoke the project-specific `test-ui` skill to run the UI test plan. If the tests cannot be run because the local environment is missing Java 25 or another required tool, report that clearly.
 When adding tests, add more test cases to cover edge cases and incorrect inputs. Interleave positive and negative test cases to detect incorrect inputs affecting the correctness of the internal states.
 
