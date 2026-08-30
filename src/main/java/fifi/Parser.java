@@ -1,20 +1,61 @@
+package fifi;
+
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Locale;
+
+import fifi.command.AddDeadlineCommand;
+import fifi.command.AddEventCommand;
+import fifi.command.AddTodoCommand;
+import fifi.command.Command;
+import fifi.command.DeleteCommand;
+import fifi.command.ExitCommand;
+import fifi.command.ListCommand;
+import fifi.command.MarkCommand;
+import fifi.command.ShowCommand;
+import fifi.command.UnmarkCommand;
+import fifi.exception.InvalidCommandException;
+import fifi.exception.InvalidDescriptionException;
+import fifi.task.Deadline;
+import fifi.task.Event;
+import fifi.task.Task;
+import fifi.task.ToDo;
 
 /**
  * Converts raw user input into commands, task numbers, and task objects.
  */
 public class Parser {
-    /**
-     * Maximum number of tasks allowed in the chatbot's task list.
-     */
-    private static final int MAX_TASKS = 100;
     private static final DateTimeFormatter INPUT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DISPLAY_DATE_FORMATTER =
             DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
+
+    /**
+     * Converts the user's full input into an executable command.
+     *
+     * @param input the full line typed by the user
+     * @return the command represented by the input
+     * @throws InvalidCommandException if the command word is not recognized
+     * @throws InvalidDescriptionException if a command description is missing
+     */
+    public static Command parse(String input) throws InvalidCommandException, InvalidDescriptionException {
+        String command = parseCommand(input);
+        return switch (command) {
+            case "bye" -> new ExitCommand();
+            case "list" -> new ListCommand();
+            case "mark" -> new MarkCommand(parseTaskNumber(input, "mark"));
+            case "unmark" -> new UnmarkCommand(parseTaskNumber(input, "unmark"));
+            case "todo" -> new AddTodoCommand(parseToDo(input));
+            case "deadline" -> new AddDeadlineCommand(parseDeadline(input));
+            case "event" -> new AddEventCommand(parseEvent(input));
+            case "delete" -> new DeleteCommand(parseTaskNumber(input, "delete"));
+            case "show" -> new ShowCommand(parseShowDate(input));
+            default -> throw new InvalidCommandException("""
+                        UhOh, this command is invalid, please enter a valid one!
+                        Valid commands include "list, todo, event, deadline, mark, unmark, delete, show"\
+                        """);
+        };
+    }
 
     /**
      * Converts a date string into a {@code LocalDate}.
@@ -69,7 +110,7 @@ public class Parser {
      * @param input the full line typed by the user
      * @return the command word at the start of the input
      */
-    public static String parseCommand(String input) {
+    private static String parseCommand(String input) {
         return input.split(" ", 2)[0];
     }
 
@@ -80,7 +121,7 @@ public class Parser {
      * @param command the command word before the task number
      * @return the zero-based task index
      */
-    public static int parseTaskNumber(String input, String command) {
+    private static int parseTaskNumber(String input, String command) {
         return Integer.parseInt(input.substring(command.length()).trim()) - 1;
     }
 
@@ -93,10 +134,7 @@ public class Parser {
      * @throws ExcessiveTaskException if the task list is already full
      * @throws InvalidDescriptionException if the todo name is empty
      */
-    public static Task parseToDo(ArrayList<Task> tasks, String input)
-            throws ExcessiveTaskException, InvalidDescriptionException {
-        checkTaskLimit(tasks);
-
+    private static Task parseToDo(String input) throws InvalidDescriptionException {
         String name = input.substring("todo".length()).trim();
         if (name.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty todo name");
@@ -113,10 +151,7 @@ public class Parser {
      * @throws ExcessiveTaskException if the task list is already full
      * @throws InvalidDescriptionException if the deadline name or date is missing
      */
-    public static Task parseDeadline(ArrayList<Task> tasks, String input)
-            throws ExcessiveTaskException, InvalidDescriptionException, DateTimeException {
-        checkTaskLimit(tasks);
-
+    private static Task parseDeadline(String input) throws InvalidDescriptionException, DateTimeException {
         int byIndex = input.indexOf("/by");
         if (byIndex == -1 || input.substring(byIndex + "/by".length()).trim().isEmpty()) {
             throw new InvalidDescriptionException("Oops! You did not provide a date for the deadline");
@@ -140,10 +175,7 @@ public class Parser {
      * @throws ExcessiveTaskException if the task list is already full
      * @throws InvalidDescriptionException if the event name, start date, or end date is missing
      */
-    public static Task parseEvent(ArrayList<Task> tasks, String input)
-            throws ExcessiveTaskException, InvalidDescriptionException {
-        checkTaskLimit(tasks);
-
+    private static Task parseEvent(String input) throws InvalidDescriptionException {
         int fromIndex = input.indexOf("/from");
         int toIndex = input.indexOf("/to");
         if (toIndex == -1 || input.substring(toIndex + "/to".length()).trim().isEmpty()) {
@@ -162,14 +194,5 @@ public class Parser {
         String from = input.substring(fromIndex + "/from".length(), toIndex).trim();
         String to = input.substring(toIndex + "/to".length()).trim();
         return new Event(false, name, parseDate(from), parseDate(to));
-    }
-
-    private static void checkTaskLimit(ArrayList<Task> tasks) throws ExcessiveTaskException {
-        if (tasks.size() >= MAX_TASKS) {
-            throw new ExcessiveTaskException(
-                    """
-                    You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
-                    """);
-        }
     }
 }

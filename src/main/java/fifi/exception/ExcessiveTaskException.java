@@ -1,5 +1,7 @@
+package fifi.exception;
+
 public class ExcessiveTaskException extends FiFiException {
-    ExcessiveTaskException(String message) {
+    public ExcessiveTaskException(String message) {
         super(message);
     }
 }

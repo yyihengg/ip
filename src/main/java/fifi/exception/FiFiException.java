@@ -1,5 +1,7 @@
+package fifi.exception;
+
 public class FiFiException extends Exception {
-    FiFiException(String message) {
+    public FiFiException(String message) {
         super(message);
     }
 }
