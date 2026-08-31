@@ -471,7 +471,7 @@ How may I help?
 ____________________________________________________________
 ____________________________________________________________
 UhOh, this command is invalid, please enter a valid one!
-Valid commands include "list, todo, event, deadline, mark, unmark, delete, show"
+Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find"
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -541,9 +541,85 @@ T | 0 | read book
 E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
-## Rejects Empty Todo Name
+## Finds Tasks By Keyword
 
-Aim: Check that a todo command with only whitespace after the command shows the empty todo name message.
+Aim: Check that find displays tasks whose descriptions contain the keyword.
+
+Initial data file:
+```text
+T | 1 | read book
+D | 1 | return book | 2019-12-02
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
+```
+
+Inputs:
+```text
+find book
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Here are the matching tasks in your list:
+1. [T][X] read book
+2. [D][X] return book (by: Dec 02 2019)
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+T | 1 | read book
+D | 1 | return book | 2019-12-02
+E | 0 | project meeting | 2019-12-02 | 2019-12-04
+```
+
+## Rejects Find Without Keyword
+
+Aim: Check that a find command without a keyword shows the missing keyword message.
+
+Inputs:
+```text
+find
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a keyword to find
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Rejects Empty Todo Description
+
+Aim: Check that a todo command with only whitespace after the command shows the empty todo description message.
 
 Inputs:
 ```text
@@ -563,7 +639,7 @@ Hello! My name is Fifi ^^
 How may I help?
 ____________________________________________________________
 ____________________________________________________________
-Oops! You cannot have an empty todo name
+Oops! You cannot have an empty todo description
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -571,9 +647,9 @@ ____________________________________________________________
 
 ```
 
-## Rejects Empty Deadline Name
+## Rejects Empty Deadline Description
 
-Aim: Check that a deadline command with no task name before /by shows the empty deadline name message.
+Aim: Check that a deadline command with no task description before /by shows the empty deadline description message.
 
 Inputs:
 ```text
@@ -593,7 +669,7 @@ Hello! My name is Fifi ^^
 How may I help?
 ____________________________________________________________
 ____________________________________________________________
-Oops! You cannot have an empty deadline name
+Oops! You cannot have an empty deadline description
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -601,9 +677,9 @@ ____________________________________________________________
 
 ```
 
-## Rejects Empty Event Name
+## Rejects Empty Event Description
 
-Aim: Check that an event command with no task name before /from shows the empty event name message.
+Aim: Check that an event command with no task description before /from shows the empty event description message.
 
 Inputs:
 ```text
@@ -623,7 +699,7 @@ Hello! My name is Fifi ^^
 How may I help?
 ____________________________________________________________
 ____________________________________________________________
-Oops! You cannot have an empty event name
+Oops! You cannot have an empty event description
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^

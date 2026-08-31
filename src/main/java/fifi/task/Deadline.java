@@ -10,8 +10,8 @@ import fifi.Parser;
 public class Deadline extends Task {
     protected LocalDate dueDate;
 
-    public Deadline(boolean marked, String name, LocalDate dueDate) {
-        super(marked, name);
+    public Deadline(boolean marked, String description, LocalDate dueDate) {
+        super(marked, description);
         this.dueDate = dueDate;
     }
 
@@ -26,7 +26,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("D | %s | %s | %s", getMarkedStatus(), getName(),
+        return String.format("D | %s | %s | %s", getMarkedStatus(), getDescription(),
                 Parser.formatDateForStorage(getDueDate()));
     }
 

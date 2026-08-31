@@ -5,19 +5,19 @@ package fifi.task;
  */
 public class Task {
     protected boolean marked;
-    protected final String name;
+    protected final String description;
 
-    Task(boolean marked, String name) {
+    Task(boolean marked, String description) {
         this.marked = marked;
-        this.name = name;
+        this.description = description;
     }
 
     public boolean isMarked() {
         return this.marked;
     }
 
-    public String getName() {
-        return this.name;
+    public String getDescription() {
+        return this.description;
     }
 
     /**
@@ -49,14 +49,14 @@ public class Task {
      * @return the saved representation of this task
      */
     public String toFileString() {
-        return String.format("T | %s | %s", getMarkedStatus(), getName());
+        return String.format("T | %s | %s", getMarkedStatus(), getDescription());
     }
 
     @Override
     public String toString() {
         if (this.isMarked()) {
-            return String.format("[X] %s", getName());
+            return String.format("[X] %s", getDescription());
         }
-        return String.format("[ ] %s", getName());
+        return String.format("[ ] %s", getDescription());
     }
 }

@@ -17,6 +17,7 @@ import fifi.command.AddTodoCommand;
 import fifi.command.Command;
 import fifi.command.DeleteCommand;
 import fifi.command.ExitCommand;
+import fifi.command.FindCommand;
 import fifi.command.ListCommand;
 import fifi.command.MarkCommand;
 import fifi.command.ShowCommand;
@@ -61,17 +62,17 @@ public class ParserTest {
     }
 
     @Test
-    public void parse_todoWithName_addTodoCommandReturned() throws Exception {
+    public void parse_todoWithDescription_addTodoCommandReturned() throws Exception {
         assertInstanceOf(AddTodoCommand.class, Parser.parse("todo read book"));
     }
 
     @Test
-    public void parse_deadlineWithNameAndDate_addDeadlineCommandReturned() throws Exception {
+    public void parse_deadlineWithDescriptionAndDate_addDeadlineCommandReturned() throws Exception {
         assertInstanceOf(AddDeadlineCommand.class, Parser.parse("deadline return book /by 2025-10-15"));
     }
 
     @Test
-    public void parse_eventWithNameAndDates_addEventCommandReturned() throws Exception {
+    public void parse_eventWithDescriptionAndDates_addEventCommandReturned() throws Exception {
         assertInstanceOf(AddEventCommand.class,
                 Parser.parse("event career fair /from 2025-10-01 /to 2025-10-03"));
     }
@@ -79,6 +80,11 @@ public class ParserTest {
     @Test
     public void parse_showWithDate_showCommandReturned() throws Exception {
         assertInstanceOf(ShowCommand.class, Parser.parse("show 2025-10-15"));
+    }
+
+    @Test
+    public void parse_findWithKeyword_findCommandReturned() throws Exception {
+        assertInstanceOf(FindCommand.class, Parser.parse("find book"));
     }
 
     // ---------- parse: unrecognised commands ----------
@@ -96,12 +102,12 @@ public class ParserTest {
     // ---------- parse: todo ----------
 
     @Test
-    public void parse_todoWithoutName_exceptionThrown() {
+    public void parse_todoWithoutDescription_exceptionThrown() {
         assertThrows(InvalidDescriptionException.class, () -> Parser.parse("todo"));
     }
 
     @Test
-    public void parse_todoWithBlankName_exceptionThrown() {
+    public void parse_todoWithBlankDescription_exceptionThrown() {
         assertThrows(InvalidDescriptionException.class, () -> Parser.parse("todo    "));
     }
 
@@ -118,7 +124,7 @@ public class ParserTest {
     }
 
     @Test
-    public void parse_deadlineWithoutName_exceptionThrown() {
+    public void parse_deadlineWithoutDescription_exceptionThrown() {
         assertThrows(InvalidDescriptionException.class, () -> Parser.parse("deadline /by 2025-10-15"));
     }
 
@@ -148,7 +154,7 @@ public class ParserTest {
     }
 
     @Test
-    public void parse_eventWithoutName_exceptionThrown() {
+    public void parse_eventWithoutDescription_exceptionThrown() {
         assertThrows(InvalidDescriptionException.class,
                 () -> Parser.parse("event /from 2025-10-01 /to 2025-10-03"));
     }
@@ -169,6 +175,18 @@ public class ParserTest {
     @Test
     public void parse_showWithInvalidDateFormat_exceptionThrown() {
         assertThrows(DateTimeException.class, () -> Parser.parse("show 15-10-2025"));
+    }
+
+    // ---------- parse: find ----------
+
+    @Test
+    public void parse_findWithoutKeyword_exceptionThrown() {
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("find"));
+    }
+
+    @Test
+    public void parse_findWithBlankKeyword_exceptionThrown() {
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("find    "));
     }
 
     // ---------- parseDate ----------
