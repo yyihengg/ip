@@ -42,6 +42,7 @@ All Java code in this project must follow the SE-EDU Java coding standard basic 
 
 ## Git
 
+Use the project-specific `seedu-git-standard` skill for all commit messages, merge commit messages, branch names, tags, and push workflows.
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
