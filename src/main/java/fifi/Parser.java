@@ -128,13 +128,11 @@ public class Parser {
     }
 
     /**
-     * Creates a todo task from the user's input.
+     * Creates a ToDo task from the user's input.
      *
-     * @param tasks the current task list
      * @param input the full line typed by the user
-     * @return the todo task described by the input
-     * @throws ExcessiveTaskException if the task list is already full
-     * @throws InvalidDescriptionException if the todo name is empty
+     * @return the ToDo task described by the input
+     * @throws InvalidDescriptionException if the task name is missing
      */
     private static Task parseToDo(String input) throws InvalidDescriptionException {
         String name = input.substring("todo".length()).trim();
@@ -147,11 +145,10 @@ public class Parser {
     /**
      * Creates a deadline task from the user's input.
      *
-     * @param tasks the current task list
      * @param input the full line typed by the user
      * @return the deadline task described by the input
-     * @throws ExcessiveTaskException if the task list is already full
      * @throws InvalidDescriptionException if the deadline name or date is missing
+     * @throws DateTimeException if the date does not match the required format
      */
     private static Task parseDeadline(String input) throws InvalidDescriptionException, DateTimeException {
         int byIndex = input.indexOf("/by");
@@ -171,10 +168,8 @@ public class Parser {
     /**
      * Creates an event task from the user's input.
      *
-     * @param tasks the current task list
      * @param input the full line typed by the user
      * @return the event task described by the input
-     * @throws ExcessiveTaskException if the task list is already full
      * @throws InvalidDescriptionException if the event name, start date, or end date is missing
      */
     private static Task parseEvent(String input) throws InvalidDescriptionException {

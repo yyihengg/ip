@@ -7,7 +7,7 @@ import fifi.Parser;
 /**
  * Represents a task that must be completed by a given date or time.
  */
-public class Deadline extends Task{
+public class Deadline extends Task {
     protected LocalDate dueDate;
 
     public Deadline(boolean marked, String name, LocalDate dueDate) {

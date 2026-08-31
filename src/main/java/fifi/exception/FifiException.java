@@ -1,15 +1,15 @@
 package fifi.exception;
 
 /**
- * Represents an error caused by an unrecognized command.
+ * Represents an error caused by invalid Fifi usage or data.
  */
-public class InvalidCommandException extends FifiException {
+public class FifiException extends Exception {
     /**
      * Creates an exception with the message to show to the user.
      *
      * @param message the error message
      */
-    public InvalidCommandException(String message) {
+    public FifiException(String message) {
         super(message);
     }
 }

@@ -5,7 +5,7 @@ import java.io.IOException;
 import fifi.Storage;
 import fifi.TaskList;
 import fifi.Ui;
-import fifi.exception.FiFiException;
+import fifi.exception.FifiException;
 import fifi.task.Task;
 
 /**
@@ -24,7 +24,7 @@ public abstract class AddTaskCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws FiFiException, IOException {
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws FifiException, IOException {
         tasks.add(task);
         storage.saveTasks(tasks);
         ui.showResponse(String.format(
