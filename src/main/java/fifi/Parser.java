@@ -12,6 +12,7 @@ import fifi.command.AddTodoCommand;
 import fifi.command.Command;
 import fifi.command.DeleteCommand;
 import fifi.command.ExitCommand;
+import fifi.command.FindCommand;
 import fifi.command.ListCommand;
 import fifi.command.MarkCommand;
 import fifi.command.ShowCommand;
@@ -52,9 +53,10 @@ public class Parser {
             case "event" -> new AddEventCommand(parseEvent(input));
             case "delete" -> new DeleteCommand(parseTaskNumber(input, "delete"));
             case "show" -> new ShowCommand(parseShowDate(input));
+            case "find" -> new FindCommand(parseFindKeyword(input));
             default -> throw new InvalidCommandException("""
                         UhOh, this command is invalid, please enter a valid one!
-                        Valid commands include "list, todo, event, deadline, mark, unmark, delete, show"\
+                        Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find"\
                         """);
         };
     }
@@ -128,30 +130,41 @@ public class Parser {
     }
 
     /**
+     * Returns the keyword from a find command.
+     *
+     * @param input the full line typed by the user
+     * @return the keyword to find in task descriptions
+     * @throws InvalidDescriptionException if the keyword is missing
+     */
+    private static String parseFindKeyword(String input) throws InvalidDescriptionException {
+        String keyword = input.substring("find".length()).trim();
+        if (keyword.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You did not provide a keyword to find");
+        }
+        return keyword;
+    }
+
+    /**
      * Creates a todo task from the user's input.
      *
-     * @param tasks the current task list
      * @param input the full line typed by the user
      * @return the todo task described by the input
-     * @throws ExcessiveTaskException if the task list is already full
-     * @throws InvalidDescriptionException if the todo name is empty
+     * @throws InvalidDescriptionException if the todo description is empty
      */
     private static Task parseToDo(String input) throws InvalidDescriptionException {
-        String name = input.substring("todo".length()).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty todo name");
+        String description = input.substring("todo".length()).trim();
+        if (description.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You cannot have an empty todo description");
         }
-        return new ToDo(false, name);
+        return new ToDo(false, description);
     }
 
     /**
      * Creates a deadline task from the user's input.
      *
-     * @param tasks the current task list
      * @param input the full line typed by the user
      * @return the deadline task described by the input
-     * @throws ExcessiveTaskException if the task list is already full
-     * @throws InvalidDescriptionException if the deadline name or date is missing
+     * @throws InvalidDescriptionException if the deadline description or date is missing
      */
     private static Task parseDeadline(String input) throws InvalidDescriptionException, DateTimeException {
         int byIndex = input.indexOf("/by");
@@ -159,23 +172,21 @@ public class Parser {
             throw new InvalidDescriptionException("Oops! You did not provide a date for the deadline");
         }
 
-        String name = input.substring("deadline".length(), byIndex).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty deadline name");
+        String description = input.substring("deadline".length(), byIndex).trim();
+        if (description.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You cannot have an empty deadline description");
         }
 
         String deadlineDate = input.substring(byIndex + "/by".length()).trim();
-        return new Deadline(false, name, parseDate(deadlineDate));
+        return new Deadline(false, description, parseDate(deadlineDate));
     }
 
     /**
      * Creates an event task from the user's input.
      *
-     * @param tasks the current task list
      * @param input the full line typed by the user
      * @return the event task described by the input
-     * @throws ExcessiveTaskException if the task list is already full
-     * @throws InvalidDescriptionException if the event name, start date, or end date is missing
+     * @throws InvalidDescriptionException if the event description, start date, or end date is missing
      */
     private static Task parseEvent(String input) throws InvalidDescriptionException {
         int fromIndex = input.indexOf("/from");
@@ -188,13 +199,13 @@ public class Parser {
             throw new InvalidDescriptionException("Oops! You did not provide a start date for the event");
         }
 
-        String name = input.substring("event".length(), fromIndex).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty event name");
+        String description = input.substring("event".length(), fromIndex).trim();
+        if (description.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You cannot have an empty event description");
         }
 
         String from = input.substring(fromIndex + "/from".length(), toIndex).trim();
         String to = input.substring(toIndex + "/to".length()).trim();
-        return new Event(false, name, parseDate(from), parseDate(to));
+        return new Event(false, description, parseDate(from), parseDate(to));
     }
 }

@@ -141,6 +141,18 @@ public class CommandTest {
     }
 
     @Test
+    public void execute_findCommand_matchingKeyword_matchingTasksPrinted() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Command command = new FindCommand("book");
+
+        command.execute(new TaskList(getSampleTasks()), new Ui(), getUnusedStorage());
+
+        assertOutputContains(output, "Here are the matching tasks in your list:\n"
+                + "1. [T][ ] read book\n"
+                + "2. [D][ ] return book (by: Dec 02 2019)");
+    }
+
+    @Test
     public void execute_exitCommand_noInput_exitMessagePrintedAndExitTrue() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ExitCommand();

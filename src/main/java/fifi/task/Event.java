@@ -11,8 +11,8 @@ public class Event extends Task {
     protected LocalDate start;
     protected LocalDate end;
 
-    public Event(boolean marked, String name, LocalDate start, LocalDate end) {
-        super(marked, name);
+    public Event(boolean marked, String description, LocalDate start, LocalDate end) {
+        super(marked, description);
         this.start = start;
         this.end = end;
     }
@@ -32,7 +32,7 @@ public class Event extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getName(),
+        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getDescription(),
                 Parser.formatDateForStorage(getStart()), Parser.formatDateForStorage(getEnd()));
     }
 

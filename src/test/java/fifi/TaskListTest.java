@@ -90,6 +90,29 @@ public class TaskListTest {
     }
 
     @Test
+    public void findTasksByKeyword_matchingDescriptions_matchingTasksReturned() {
+        TaskList tasks = new TaskList(getSampleTasks());
+
+        TaskList matchingTasks = tasks.findTasksByKeyword("book");
+
+        assertEquals("""
+
+                1. [T][ ] read book
+                2. [D][ ] return book (by: Dec 02 2019)""",
+                matchingTasks.toDisplayString());
+    }
+
+    @Test
+    public void findTasksByKeyword_noMatchingDescriptions_emptyTaskListReturned() {
+        TaskList tasks = new TaskList(getSampleTasks());
+
+        TaskList matchingTasks = tasks.findTasksByKeyword("lecture");
+
+        assertEquals(0, matchingTasks.size());
+        assertEquals("", matchingTasks.toDisplayString());
+    }
+
+    @Test
     public void toDisplayString_multipleTasks_numberedTaskStringReturned() {
         TaskList tasks = new TaskList(getSampleTasks());
 
