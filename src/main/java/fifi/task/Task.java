@@ -11,6 +11,7 @@ public class Task {
         this.marked = marked;
         this.name = name;
     }
+
     public boolean isMarked() {
         return this.marked;
     }
@@ -28,10 +29,16 @@ public class Task {
         return this.isMarked() ? "1" : "0";
     }
 
+    /**
+     * Marks this task as done.
+     */
     public void mark() {
         this.marked = true;
     }
 
+    /**
+     * Marks this task as not done.
+     */
     public void unmark() {
         this.marked = false;
     }

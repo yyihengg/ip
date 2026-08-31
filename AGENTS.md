@@ -35,6 +35,11 @@ After each code update, update JUnit tests so they continue to cover the top ~50
 After each code update, invoke the project-specific `test-ui` skill to run the UI test plan. If the tests cannot be run because the local environment is missing Java 25 or another required tool, report that clearly.
 When adding tests, add more test cases to cover edge cases and incorrect inputs. Interleave positive and negative test cases to detect incorrect inputs affecting the correctness of the internal states.
 
+## Java coding standard
+
+Use the project-specific `seedu-java-coding-standard` skill for all Java source and test code changes.
+All Java code in this project must follow the SE-EDU Java coding standard basic and intermediate rules.
+
 ## Git
 
 Use lightweight tags unless the user requests an annotated tag.

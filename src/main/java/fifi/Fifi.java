@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.time.DateTimeException;
 
 import fifi.command.Command;
-import fifi.exception.FiFiException;
+import fifi.exception.FifiException;
 
 /**
  * Entry point for the Fifi chatbot application.
  */
-
-
 public class Fifi {
     private final Storage storage;
     private final TaskList tasks;
@@ -39,7 +37,7 @@ public class Fifi {
                 Command command = Parser.parse(input);
                 command.execute(tasks, ui, storage);
                 isExit = command.isExit();
-            } catch (FiFiException e) {
+            } catch (FifiException e) {
                 ui.showResponse(e.getMessage());
             } catch (IOException e) {
                 ui.showResponse("Oops! I could not save your tasks to the hard disk.");
@@ -49,6 +47,11 @@ public class Fifi {
         }
     }
 
+    /**
+     * Starts Fifi using the default task data file.
+     *
+     * @param args command line arguments supplied by Java
+     */
     public static void main(String[] args) {
         new Fifi("data/duke.txt").run();
     }
