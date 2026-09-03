@@ -103,8 +103,8 @@ public class Fifi {
         private String response = "";
 
         @Override
-        public void showResponse(String message) {
-            response = message;
+        public void showResponse(String... messages) {
+            response = String.join(System.lineSeparator(), messages);
         }
 
         private String getResponse() {

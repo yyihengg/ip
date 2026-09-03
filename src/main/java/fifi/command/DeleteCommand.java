@@ -26,11 +26,9 @@ public class DeleteCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
         Task removedTask = tasks.delete(taskNumber);
         storage.saveTasks(tasks);
-        ui.showResponse(String.format(
-                """
-                Got it. I've removed this task:
-                    %s
-                Now you have %d tasks in the list ^^.\
-                """, removedTask, tasks.size()));
+        ui.showResponse(
+                "Got it. I've removed this task:",
+                "    " + removedTask,
+                String.format("Now you have %d tasks in the list ^^.", tasks.size()));
     }
 }
