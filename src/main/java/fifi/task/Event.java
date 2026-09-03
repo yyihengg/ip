@@ -11,6 +11,14 @@ public class Event extends Task {
     protected LocalDate start;
     protected LocalDate end;
 
+    /**
+     * Creates an event task with its completion status, description, start date, and end date.
+     *
+     * @param marked whether the event has been completed
+     * @param description description of the event
+     * @param start date when the event starts
+     * @param end date when the event ends
+     */
     public Event(boolean marked, String description, LocalDate start, LocalDate end) {
         super(marked, description);
         this.start = start;

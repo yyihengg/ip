@@ -10,6 +10,13 @@ import fifi.Parser;
 public class Deadline extends Task {
     protected LocalDate dueDate;
 
+    /**
+     * Creates a deadline task with its completion status, description, and due date.
+     *
+     * @param marked whether the deadline has been completed
+     * @param description description of the deadline
+     * @param dueDate date when the deadline is due
+     */
     public Deadline(boolean marked, String description, LocalDate dueDate) {
         super(marked, description);
         this.dueDate = dueDate;

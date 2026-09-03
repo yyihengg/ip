@@ -137,32 +137,30 @@ public class ParserTest {
 
     @Test
     public void parse_eventWithoutToKeyword_exceptionThrown() {
-        assertThrows(InvalidDescriptionException.class,
-                () -> Parser.parse("event career fair /from 2025-10-01"));
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("event career fair /from 2025-10-01"));
     }
 
     @Test
     public void parse_eventWithoutFromKeyword_exceptionThrown() {
-        assertThrows(InvalidDescriptionException.class,
-                () -> Parser.parse("event career fair /to 2025-10-03"));
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("event career fair /to 2025-10-03"));
     }
 
     @Test
     public void parse_eventWithFromAfterTo_exceptionThrown() {
-        assertThrows(InvalidDescriptionException.class,
-                () -> Parser.parse("event career fair /to 2025-10-03 /from 2025-10-01"));
+        assertThrows(InvalidDescriptionException.class, () ->
+                Parser.parse("event career fair /to 2025-10-03 /from 2025-10-01"));
     }
 
     @Test
     public void parse_eventWithoutDescription_exceptionThrown() {
-        assertThrows(InvalidDescriptionException.class,
-                () -> Parser.parse("event /from 2025-10-01 /to 2025-10-03"));
+        assertThrows(InvalidDescriptionException.class, () ->
+                Parser.parse("event /from 2025-10-01 /to 2025-10-03"));
     }
 
     @Test
     public void parse_eventWithInvalidDateFormat_exceptionThrown() {
-        assertThrows(DateTimeException.class,
-                () -> Parser.parse("event career fair /from 01-10-2025 /to 03-10-2025"));
+        assertThrows(DateTimeException.class, () ->
+                Parser.parse("event career fair /from 01-10-2025 /to 03-10-2025"));
     }
 
     // ---------- parse: show ----------
