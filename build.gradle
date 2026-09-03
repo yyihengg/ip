@@ -2,6 +2,12 @@ plugins {
     id 'java'
     id 'application'
     id 'com.gradleup.shadow' version '9.5.1'
+    id 'checkstyle'
+}
+
+checkstyle {
+    toolVersion = '11.0.0'
+    configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
 }
 
 java {
