@@ -1,5 +1,6 @@
 package fifi;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -38,5 +39,33 @@ public class FifiTest {
         String printedText = output.toString(StandardCharsets.UTF_8);
         assertTrue(printedText.contains("Hello! My name is Fifi ^^"));
         assertTrue(printedText.contains("BaiBai! Hope to see you soon ^^"));
+    }
+
+    @Test
+    public void getResponse_todoCommand_taskAddedResponseReturned() {
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+
+        String response = fifi.getResponse("todo read book");
+
+        assertEquals(normalizeLineEndings("""
+                Got it. I've added this task:
+                [T][ ] read book
+                Now you have 1 tasks in the list."""),
+                normalizeLineEndings(response));
+    }
+
+    @Test
+    public void getResponse_invalidCommand_errorResponseReturned() {
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+
+        String response = fifi.getResponse("blah");
+
+        assertEquals("""
+                UhOh, this command is invalid, please enter a valid one!
+                Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find\"""", response);
+    }
+
+    private String normalizeLineEndings(String text) {
+        return text.replace("\r\n", "\n");
     }
 }
