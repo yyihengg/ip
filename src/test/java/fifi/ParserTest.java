@@ -62,6 +62,23 @@ public class ParserTest {
     }
 
     @Test
+    public void parse_taskNumberCommandsWithInvalidNumbers_helpfulExceptionAndRecovery() throws Exception {
+        String[] commands = {"mark", "unmark", "delete"};
+        String[] invalidNumbers = {"", "   ", "three", "1 read book", "1.5", "2147483648", "-2147483649"};
+        for (String command : commands) {
+            for (String invalidNumber : invalidNumbers) {
+                Class<? extends Command> expectedType = Parser.parse(command + " 1").getClass();
+                InvalidDescriptionException exception = assertThrows(
+                        InvalidDescriptionException.class, () -> Parser.parse(command + " " + invalidNumber));
+                assertEquals("Oops! Please enter a task number after " + command + ", e.g. " + command + " 1.",
+                        exception.getMessage());
+                assertInstanceOf(expectedType, Parser.parse(command + "   1"));
+            }
+            assertThrows(InvalidDescriptionException.class, () -> Parser.parse(command));
+        }
+    }
+
+    @Test
     public void parse_todoWithDescription_addTodoCommandReturned() throws Exception {
         assertInstanceOf(AddTodoCommand.class, Parser.parse("todo read book"));
     }

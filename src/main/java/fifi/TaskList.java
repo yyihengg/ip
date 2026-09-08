@@ -56,6 +56,8 @@ public class TaskList {
                     """);
         }
         tasks.add(task);
+        // The capacity check above must keep every successful addition within the limit.
+        assert tasks.size() <= MAX_TASKS : "Adding a task must not exceed the task limit";
     }
 
     /**
@@ -75,7 +77,11 @@ public class TaskList {
      * @return the deleted task
      */
     public Task delete(int taskNumber) {
-        return tasks.remove(taskNumber);
+        int previousSize = tasks.size();
+        Task removedTask = tasks.remove(taskNumber);
+        // Deletion must remove exactly one entry so subsequent task numbers stay consistent.
+        assert tasks.size() == previousSize - 1 : "Deleting a task must reduce the task count by one";
+        return removedTask;
     }
 
     /**

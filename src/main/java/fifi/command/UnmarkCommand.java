@@ -26,6 +26,8 @@ public class UnmarkCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
         Task currentTask = tasks.get(taskNumber);
         currentTask.unmark();
+        // Every task implementation must honor unmark() before its state is saved or reported.
+        assert !currentTask.isMarked() : "A task must be unmarked after unmark()";
         storage.saveTasks(tasks);
         ui.showResponse("OK, I've marked this task as not done yet:", currentTask.toString());
     }

@@ -2,6 +2,7 @@ package fifi.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -104,6 +105,30 @@ public class CommandTest {
     }
 
     @Test
+    public void executeMarkCommand_brokenTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo(false, "read book") {
+            @Override
+            public void mark() {
+                // Simulates a task implementation that violates the completion contract.
+            }
+        });
+        storage.saveTasks(tasks);
+
+        assertThrows(AssertionError.class, () -> new MarkCommand(0).execute(tasks, new Ui(), storage));
+        assertEquals("T | 0 | read book", Files.readString(dataFile));
+        assertEquals("", output.toString(StandardCharsets.UTF_8));
+
+        tasks.add(new ToDo(false, "working task"));
+        new MarkCommand(1).execute(tasks, new Ui(), storage);
+        assertTrue(tasks.get(1).isMarked());
+        assertTrue(Files.readString(dataFile).contains("T | 1 | working task"));
+    }
+
+    @Test
     public void executeUnmarkCommand_existingTask_taskUnmarkedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         ArrayList<Task> sampleTasks = getSampleTasks();
@@ -113,6 +138,30 @@ public class CommandTest {
         new UnmarkCommand(0).execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
         assertEquals("T | 0 | read book", firstSavedLine(dataFile));
+    }
+
+    @Test
+    public void executeUnmarkCommand_brokenTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo(true, "read book") {
+            @Override
+            public void unmark() {
+                // Simulates a task implementation that violates the completion contract.
+            }
+        });
+        storage.saveTasks(tasks);
+
+        assertThrows(AssertionError.class, () -> new UnmarkCommand(0).execute(tasks, new Ui(), storage));
+        assertEquals("T | 1 | read book", Files.readString(dataFile));
+        assertEquals("", output.toString(StandardCharsets.UTF_8));
+
+        tasks.add(new ToDo(true, "working task"));
+        new UnmarkCommand(1).execute(tasks, new Ui(), storage);
+        assertFalse(tasks.get(1).isMarked());
+        assertTrue(Files.readString(dataFile).contains("T | 0 | working task"));
     }
 
     @Test

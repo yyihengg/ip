@@ -2,6 +2,80 @@
 
 Record console UI test cases here. Each case must include an aim, inputs, and exact expected output.
 
+## Rejects Malformed Task Numbers And Continues
+
+Aim: Check that missing numbers, words, extra text, and integer overflow show helpful errors without changing tasks, and valid commands still work afterward.
+
+Inputs:
+```text
+todo read book
+mark three
+mark 1
+unmark
+unmark 1
+delete 1 read book
+list
+delete 2147483648
+delete 1
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] read book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after mark, e.g. mark 1.
+____________________________________________________________
+____________________________________________________________
+Nice! I've marked this task as done:
+[T][X] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after unmark, e.g. unmark 1.
+____________________________________________________________
+____________________________________________________________
+OK, I've marked this task as not done yet:
+[T][ ] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after delete, e.g. delete 1.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after delete, e.g. delete 1.
+____________________________________________________________
+____________________________________________________________
+Got it. I've removed this task:
+    [T][ ] read book
+Now you have 0 tasks in the list ^^.
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+
+```
+
 ## Starts And Exits
 
 Aim: Check that the chatbot greets the user and exits when the user enters bye.

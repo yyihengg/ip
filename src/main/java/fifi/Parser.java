@@ -39,7 +39,7 @@ public class Parser {
      * @param input the full line typed by the user
      * @return the command represented by the input
      * @throws InvalidCommandException if the command word is not recognized
-     * @throws InvalidDescriptionException if a command description is missing
+     * @throws InvalidDescriptionException if a command description is missing or a task number is not an integer
      */
     public static Command parse(String input) throws InvalidCommandException, InvalidDescriptionException {
         String command = parseCommand(input);
@@ -124,9 +124,18 @@ public class Parser {
      * @param input the full line typed by the user
      * @param command the command word before the task number
      * @return the zero-based task index
+     * @throws InvalidDescriptionException if the task number is missing or is not a valid integer
      */
-    private static int parseTaskNumber(String input, String command) {
-        return Integer.parseInt(input.substring(command.length()).trim()) - 1;
+    private static int parseTaskNumber(String input, String command) throws InvalidDescriptionException {
+        // The dispatcher must supply the matching prefix before this helper removes it.
+        assert parseCommand(input).equals(command) : "Task-number parsing must use the dispatched command";
+        try {
+            return Integer.parseInt(input.substring(command.length()).trim()) - 1;
+        } catch (NumberFormatException e) {
+            // Convert malformed user input into an error handled by both console and GUI callers.
+            throw new InvalidDescriptionException(
+                    "Oops! Please enter a task number after " + command + ", e.g. " + command + " 1.");
+        }
     }
 
     /**
