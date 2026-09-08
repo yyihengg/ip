@@ -1,7 +1,9 @@
 package fifi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +49,20 @@ public class StorageTest {
         assertInstanceOf(ToDo.class, loadedTasks.get(0));
         assertInstanceOf(Deadline.class, loadedTasks.get(1));
         assertInstanceOf(Event.class, loadedTasks.get(2));
+
+        ToDo todo = (ToDo) loadedTasks.get(0);
+        Deadline deadline = (Deadline) loadedTasks.get(1);
+        Event event = (Event) loadedTasks.get(2);
+        assertTrue(todo.isMarked());
+        assertEquals("read book", todo.getName());
+        assertFalse(deadline.isMarked());
+        assertEquals("return book", deadline.getName());
+        assertEquals(LocalDate.of(2019, 12, 2), deadline.getDueDate());
+        assertFalse(event.isMarked());
+        assertEquals("project meeting", event.getName());
+        assertEquals(LocalDate.of(2019, 12, 2), event.getStart());
+        assertEquals(LocalDate.of(2019, 12, 4), event.getEnd());
+
         assertEquals("[T][X] read book", loadedTasks.get(0).toString());
         assertEquals("[D][ ] return book (by: Dec 02 2019)", loadedTasks.get(1).toString());
         assertEquals("[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)",
