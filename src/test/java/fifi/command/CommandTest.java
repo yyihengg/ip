@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import fifi.Parser;
 import fifi.Storage;
 import fifi.TaskList;
 import fifi.Ui;
@@ -78,6 +79,23 @@ public class CommandTest {
         command.execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
         assertEquals("E | 0 | meeting | 2019-12-02 | 2019-12-04", Files.readString(dataFile));
+    }
+
+    @Test
+    public void execute_parsedEventWithWhitespace_trimmedFieldsAddedAndSaved() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        TaskList tasks = new TaskList();
+        Command command = Parser.parse("event   team meeting   /from   2025-10-01   /to   2025-10-03   ");
+
+        command.execute(tasks, new Ui(), new Storage(dataFile.toString()));
+
+        assertEquals(1, tasks.size());
+        Event event = (Event) tasks.get(0);
+        assertEquals("team meeting", event.getName());
+        assertEquals(LocalDate.of(2025, 10, 1), event.getStart());
+        assertEquals(LocalDate.of(2025, 10, 3), event.getEnd());
+        assertFalse(event.isMarked());
+        assertEquals("E | 0 | team meeting | 2025-10-01 | 2025-10-03", Files.readString(dataFile));
     }
 
     @Test

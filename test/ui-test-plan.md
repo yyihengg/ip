@@ -2,6 +2,69 @@
 
 Record console UI test cases here. Each case must include an aim, inputs, and exact expected output.
 
+## Preserves Event Validation Order And Recovery
+
+Aim: Check that blank and reversed event markers preserve error messages, valid events still work after errors, and rejected events do not change saved tasks.
+
+Inputs:
+```text
+event meeting /from /to
+event   team meeting   /from   2025-10-01   /to   2025-10-03
+event meeting /from   /to 2025-10-03
+list
+event meeting /to 2025-10-03 /from 2025-10-01
+event /from invalid /to invalid
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide an end date for the event
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[E][ ] team meeting (from: Oct 01 2025 to: Oct 03 2025)
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a start date for the event
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [E][ ] team meeting (from: Oct 01 2025 to: Oct 03 2025)
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a start date for the event
+____________________________________________________________
+____________________________________________________________
+Oops! You cannot have an empty event name
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [E][ ] team meeting (from: Oct 01 2025 to: Oct 03 2025)
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+E | 0 | team meeting | 2025-10-01 | 2025-10-03
+```
+
 ## Starts And Exits
 
 Aim: Check that the chatbot greets the user and exits when the user enters bye.

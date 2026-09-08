@@ -175,11 +175,15 @@ public class Parser {
     private static Task parseEvent(String input) throws InvalidDescriptionException {
         int fromIndex = input.indexOf("/from");
         int toIndex = input.indexOf("/to");
-        if (toIndex == -1 || input.substring(toIndex + "/to".length()).trim().isEmpty()) {
+        boolean hasEndMarker = toIndex != -1;
+        String to = hasEndMarker ? input.substring(toIndex + "/to".length()).trim() : "";
+        if (to.isEmpty()) {
             throw new InvalidDescriptionException("Oops! You did not provide an end date for the event");
         }
-        if (fromIndex == -1 || fromIndex > toIndex
-                || input.substring(fromIndex + "/from".length(), toIndex).trim().isEmpty()) {
+
+        boolean hasOrderedDateMarkers = fromIndex != -1 && fromIndex < toIndex;
+        String from = hasOrderedDateMarkers ? input.substring(fromIndex + "/from".length(), toIndex).trim() : "";
+        if (from.isEmpty()) {
             throw new InvalidDescriptionException("Oops! You did not provide a start date for the event");
         }
 
@@ -188,8 +192,6 @@ public class Parser {
             throw new InvalidDescriptionException("Oops! You cannot have an empty event name");
         }
 
-        String from = input.substring(fromIndex + "/from".length(), toIndex).trim();
-        String to = input.substring(toIndex + "/to".length()).trim();
         return new Event(false, name, parseDate(from), parseDate(to));
     }
 }
