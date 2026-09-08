@@ -3,6 +3,7 @@ package fifi;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import fifi.exception.ExcessiveTaskException;
 import fifi.task.Deadline;
@@ -85,12 +86,9 @@ public class TaskList {
      * @return a task list containing matching deadlines and events
      */
     public TaskList getTasksOccurringOn(LocalDate showDate) {
-        ArrayList<Task> occurringTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (isOccurringOn(task, showDate)) {
-                occurringTasks.add(task);
-            }
-        }
+        ArrayList<Task> occurringTasks = tasks.stream()
+                .filter(task -> isOccurringOn(task, showDate))
+                .collect(Collectors.toCollection(ArrayList::new));
         return new TaskList(occurringTasks);
     }
 
@@ -101,12 +99,9 @@ public class TaskList {
      * @return a task list containing matching tasks
      */
     public TaskList findTasksByKeyword(String keyword) {
-        ArrayList<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.getDescription().contains(keyword)) {
-                matchingTasks.add(task);
-            }
-        }
+        ArrayList<Task> matchingTasks = tasks.stream()
+                .filter(task -> task.getDescription().contains(keyword))
+                .collect(Collectors.toCollection(ArrayList::new));
         return new TaskList(matchingTasks);
     }
 
