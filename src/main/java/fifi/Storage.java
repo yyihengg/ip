@@ -44,8 +44,8 @@ public class Storage {
      * @return the tasks saved in the data file, or an empty list if the file does not exist
      * @throws IOException if the file cannot be read
      */
-    public ArrayList<Task> loadTasks() throws IOException {
-        ArrayList<Task> tasks = new ArrayList<>();
+    public List<Task> loadTasks() throws IOException {
+        List<Task> tasks = new ArrayList<>();
         if (!Files.exists(filePath)) {
             return tasks;
         }

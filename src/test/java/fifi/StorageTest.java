@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -29,7 +30,7 @@ public class StorageTest {
     public void loadTasks_missingFile_emptyTaskListReturned() throws Exception {
         Storage storage = new Storage(temporaryDirectory.resolve("missing.txt").toString());
 
-        ArrayList<Task> loadedTasks = storage.loadTasks();
+        List<Task> loadedTasks = storage.loadTasks();
 
         assertEquals(0, loadedTasks.size());
     }
@@ -43,7 +44,7 @@ public class StorageTest {
                 E | 0 | project meeting | 2019-12-02 | 2019-12-04""");
         Storage storage = new Storage(dataFile.toString());
 
-        ArrayList<Task> loadedTasks = storage.loadTasks();
+        List<Task> loadedTasks = storage.loadTasks();
 
         assertEquals(3, loadedTasks.size());
         assertInstanceOf(ToDo.class, loadedTasks.get(0));
@@ -90,7 +91,7 @@ public class StorageTest {
         Storage storage = new Storage(dataFile.toString());
 
         storage.saveTasks(new TaskList(getSampleTasks()));
-        ArrayList<Task> loadedTasks = storage.loadTasks();
+        List<Task> loadedTasks = storage.loadTasks();
 
         assertEquals(3, loadedTasks.size());
         assertEquals("[T][X] read book", loadedTasks.get(0).toString());

@@ -15,7 +15,7 @@ import fifi.task.Task;
 public class TaskList {
     private static final int MAX_TASKS = 100;
 
-    private final ArrayList<Task> tasks;
+    private final List<Task> tasks;
 
     /**
      * Creates an empty task list.
@@ -29,8 +29,8 @@ public class TaskList {
      *
      * @param tasks the tasks to keep in this list
      */
-    public TaskList(ArrayList<Task> tasks) {
-        this.tasks = tasks;
+    public TaskList(List<Task> tasks) {
+        this.tasks = new ArrayList<>(tasks);
     }
 
     /**
