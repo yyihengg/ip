@@ -140,6 +140,8 @@ public class CommandTest {
 
         new MarkCommand(0).execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
+        assertTrue(tasks.get(0).isMarked());
+        assertFalse(tasks.get(1).isMarked());
         assertEquals("T | 1 | read book", firstSavedLine(dataFile));
     }
 
@@ -152,6 +154,8 @@ public class CommandTest {
 
         new UnmarkCommand(0).execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
+        assertFalse(tasks.get(0).isMarked());
+        assertFalse(tasks.get(1).isMarked());
         assertEquals("T | 0 | read book", firstSavedLine(dataFile));
     }
 

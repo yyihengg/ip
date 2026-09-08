@@ -59,21 +59,21 @@ public class TaskList {
     /**
      * Returns the task at the given zero-based index.
      *
-     * @param taskNumber the zero-based task number
+     * @param taskIndex the zero-based task index
      * @return the task at that index
      */
-    public Task get(int taskNumber) {
-        return tasks.get(taskNumber);
+    public Task get(int taskIndex) {
+        return tasks.get(taskIndex);
     }
 
     /**
      * Deletes and returns the task at the given zero-based index.
      *
-     * @param taskNumber the zero-based task number
+     * @param taskIndex the zero-based task index
      * @return the deleted task
      */
-    public Task delete(int taskNumber) {
-        return tasks.remove(taskNumber);
+    public Task delete(int taskIndex) {
+        return tasks.remove(taskIndex);
     }
 
     /**

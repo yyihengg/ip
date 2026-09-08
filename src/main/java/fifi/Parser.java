@@ -50,12 +50,12 @@ public class Parser {
         return switch (command) {
             case "bye" -> new ExitCommand();
             case "list" -> new ListCommand();
-            case "mark" -> new MarkCommand(parseTaskNumber(arguments));
-            case "unmark" -> new UnmarkCommand(parseTaskNumber(arguments));
+            case "mark" -> new MarkCommand(parseTaskIndex(arguments));
+            case "unmark" -> new UnmarkCommand(parseTaskIndex(arguments));
             case "todo" -> new AddTodoCommand(parseToDo(arguments));
             case "deadline" -> new AddDeadlineCommand(parseDeadline(arguments));
             case "event" -> new AddEventCommand(parseEvent(arguments));
-            case "delete" -> new DeleteCommand(parseTaskNumber(arguments));
+            case "delete" -> new DeleteCommand(parseTaskIndex(arguments));
             case "show" -> new ShowCommand(parseDateArgument(arguments));
             default -> throw new InvalidCommandException("""
                         UhOh, this command is invalid, please enter a valid one!
@@ -134,7 +134,7 @@ public class Parser {
      * @param arguments the text following the command word
      * @return the zero-based task index
      */
-    private static int parseTaskNumber(String arguments) {
+    private static int parseTaskIndex(String arguments) {
         return Integer.parseInt(arguments) - 1;
     }
 
