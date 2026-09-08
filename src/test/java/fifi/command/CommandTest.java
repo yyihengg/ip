@@ -2,6 +2,7 @@ package fifi.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -20,6 +21,7 @@ import fifi.Parser;
 import fifi.Storage;
 import fifi.TaskList;
 import fifi.Ui;
+import fifi.exception.InvalidDescriptionException;
 import fifi.task.Deadline;
 import fifi.task.Event;
 import fifi.task.Task;
@@ -96,6 +98,26 @@ public class CommandTest {
         assertEquals(LocalDate.of(2025, 10, 3), event.getEnd());
         assertFalse(event.isMarked());
         assertEquals("E | 0 | team meeting | 2025-10-01 | 2025-10-03", Files.readString(dataFile));
+    }
+
+    @Test
+    public void execute_taskNamesContainingCommandWords_fullNamesSavedAfterInvalidInputs() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        TaskList tasks = new TaskList();
+        Ui ui = new Ui();
+        Storage storage = new Storage(dataFile.toString());
+
+        Parser.parse("todo todo deadline event").execute(tasks, ui, storage);
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("deadline deadline review"));
+        Parser.parse("deadline deadline review /by 2025-10-15").execute(tasks, ui, storage);
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("event event planning /to 2025-10-03"));
+        Parser.parse("event event planning /from 2025-10-01 /to 2025-10-03").execute(tasks, ui, storage);
+
+        assertEquals(String.join(System.lineSeparator(),
+                "T | 0 | todo deadline event",
+                "D | 0 | deadline review | 2025-10-15",
+                "E | 0 | event planning | 2025-10-01 | 2025-10-03"),
+                Files.readString(dataFile));
     }
 
     @Test

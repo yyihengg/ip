@@ -63,17 +63,22 @@ public class ParserTest {
     @Test
     public void parse_todoWithName_addTodoCommandReturned() throws Exception {
         assertInstanceOf(AddTodoCommand.class, Parser.parse("todo read book"));
+        assertInstanceOf(AddTodoCommand.class, Parser.parse("todo todo deadline event"));
     }
 
     @Test
     public void parse_deadlineWithNameAndDate_addDeadlineCommandReturned() throws Exception {
         assertInstanceOf(AddDeadlineCommand.class, Parser.parse("deadline return book /by 2025-10-15"));
+        assertInstanceOf(AddDeadlineCommand.class,
+                Parser.parse("deadline deadline event planning /by 2025-10-15"));
     }
 
     @Test
     public void parse_eventWithNameAndDates_addEventCommandReturned() throws Exception {
         assertInstanceOf(AddEventCommand.class,
                 Parser.parse("event career fair /from 2025-10-01 /to 2025-10-03"));
+        assertInstanceOf(AddEventCommand.class,
+                Parser.parse("event event deadline review /from 2025-10-01 /to 2025-10-03"));
     }
 
     @Test
