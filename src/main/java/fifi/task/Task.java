@@ -3,13 +3,13 @@ package fifi.task;
 import java.time.LocalDate;
 
 /**
- * Represents one task in the chatbot's task list.
+ * Provides common state and behavior for tasks in the chatbot's task list.
  */
-public class Task {
-    protected boolean marked;
-    protected final String name;
+public abstract class Task {
+    private boolean marked;
+    private final String name;
 
-    Task(boolean marked, String name) {
+    protected Task(boolean marked, String name) {
         this.marked = marked;
         this.name = name;
     }
@@ -60,9 +60,7 @@ public class Task {
      *
      * @return the saved representation of this task
      */
-    public String toFileString() {
-        return String.format("T | %s | %s", getMarkedStatus(), getName());
-    }
+    public abstract String toFileString();
 
     @Override
     public String toString() {

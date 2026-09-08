@@ -8,9 +8,17 @@ import fifi.Parser;
  * Represents a task that happens from one date or time to another.
  */
 public class Event extends Task {
-    protected LocalDate start;
-    protected LocalDate end;
+    private final LocalDate start;
+    private final LocalDate end;
 
+    /**
+     * Creates an event task with its completion status, name, and date range.
+     *
+     * @param marked whether the event has been completed
+     * @param name name of the event
+     * @param start date when the event starts
+     * @param end date when the event ends
+     */
     public Event(boolean marked, String name, LocalDate start, LocalDate end) {
         super(marked, name);
         this.start = start;

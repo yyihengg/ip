@@ -8,8 +8,15 @@ import fifi.Parser;
  * Represents a task that must be completed by a given date or time.
  */
 public class Deadline extends Task {
-    protected LocalDate dueDate;
+    private final LocalDate dueDate;
 
+    /**
+     * Creates a deadline task with its completion status, name, and due date.
+     *
+     * @param marked whether the deadline has been completed
+     * @param name name of the deadline
+     * @param dueDate date when the deadline is due
+     */
     public Deadline(boolean marked, String name, LocalDate dueDate) {
         super(marked, name);
         this.dueDate = dueDate;
