@@ -1,5 +1,7 @@
 package fifi.task;
 
+import java.time.LocalDate;
+
 /**
  * Represents one task in the chatbot's task list.
  */
@@ -41,6 +43,16 @@ public class Task {
      */
     public void unmark() {
         this.marked = false;
+    }
+
+    /**
+     * Returns whether this task occurs on the given date.
+     *
+     * @param date the date to check
+     * @return false because a basic task has no associated date
+     */
+    public boolean occursOn(LocalDate date) {
+        return false;
     }
 
     /**

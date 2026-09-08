@@ -19,6 +19,11 @@ public class Deadline extends Task {
         return this.dueDate;
     }
 
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return dueDate.isEqual(date);
+    }
+
     /**
      * Returns the text format used to save this deadline on disk.
      *

@@ -1,6 +1,8 @@
 package fifi.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
@@ -37,5 +39,15 @@ public class DeadlineTest {
         Deadline deadline = new Deadline(true, "return book", LocalDate.of(2019, 12, 2));
 
         assertEquals("D | 1 | return book | 2019-12-02", deadline.toFileString());
+    }
+
+    @Test
+    public void occursOn_dueDateAndOtherDate_trueThenFalse() {
+        Deadline deadline = new Deadline(false, "return book", LocalDate.of(2019, 12, 2));
+
+        assertTrue(deadline.occursOn(LocalDate.of(2019, 12, 2)));
+        assertFalse(deadline.occursOn(LocalDate.of(2019, 12, 1)));
+        assertTrue(deadline.occursOn(LocalDate.of(2019, 12, 2)));
+        assertFalse(deadline.occursOn(LocalDate.of(2019, 12, 3)));
     }
 }

@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fifi.exception.ExcessiveTaskException;
-import fifi.task.Deadline;
-import fifi.task.Event;
 import fifi.task.Task;
 
 /**
@@ -87,7 +85,7 @@ public class TaskList {
     public TaskList getTasksOccurringOn(LocalDate showDate) {
         ArrayList<Task> occurringTasks = new ArrayList<>();
         for (Task task : tasks) {
-            if (isOccurringOn(task, showDate)) {
+            if (task.occursOn(showDate)) {
                 occurringTasks.add(task);
             }
         }
@@ -117,17 +115,5 @@ public class TaskList {
      */
     public List<Task> asList() {
         return List.copyOf(tasks);
-    }
-
-    private boolean isOccurringOn(Task task, LocalDate showDate) {
-        if (task instanceof Deadline deadline) {
-            return deadline.getDueDate().isEqual(showDate);
-        }
-        if (task instanceof Event event) {
-            LocalDate startDate = event.getStart();
-            LocalDate endDate = event.getEnd();
-            return !showDate.isBefore(startDate) && !showDate.isAfter(endDate);
-        }
-        return false;
     }
 }

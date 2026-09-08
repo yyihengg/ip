@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -45,5 +47,12 @@ public class TaskTest {
         Task task = new Task(true, "read book");
 
         assertEquals("T | 1 | read book", task.toFileString());
+    }
+
+    @Test
+    public void occursOn_basicTask_falseForAnyDate() {
+        Task task = new Task(false, "read book");
+
+        assertFalse(task.occursOn(LocalDate.of(2019, 12, 2)));
     }
 }

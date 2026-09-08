@@ -25,6 +25,11 @@ public class Event extends Task {
         return this.end;
     }
 
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return !date.isBefore(start) && !date.isAfter(end);
+    }
+
     /**
      * Returns the text format used to save this event on disk.
      *
