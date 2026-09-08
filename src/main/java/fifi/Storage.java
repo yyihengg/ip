@@ -18,6 +18,7 @@ import fifi.task.ToDo;
 public class Storage {
     private static final String FIELD_SEPARATOR_REGEX = " \\| ";
     private static final String MARKED_STATUS = "1";
+    private static final String TODO_TASK_CODE = "T";
     private static final String DEADLINE_TASK_CODE = "D";
     private static final String EVENT_TASK_CODE = "E";
 
@@ -83,16 +84,17 @@ public class Storage {
      * @param savedTask one line from the save file
      * @return the task represented by that line
      */
-    private Task parseTask(String savedTask) {
+    private Task parseTask(String savedTask) throws IOException {
         String[] parts = savedTask.split(FIELD_SEPARATOR_REGEX);
         boolean isMarked = parts[STATUS_INDEX].equals(MARKED_STATUS);
 
         return switch (parts[TASK_TYPE_INDEX]) {
+            case TODO_TASK_CODE -> new ToDo(isMarked, parts[NAME_INDEX]);
             case DEADLINE_TASK_CODE -> new Deadline(isMarked, parts[NAME_INDEX],
                     Parser.parseDate(parts[DATE_INDEX]));
             case EVENT_TASK_CODE -> new Event(isMarked, parts[NAME_INDEX],
                     Parser.parseDate(parts[DATE_INDEX]), Parser.parseDate(parts[END_DATE_INDEX]));
-            default -> new ToDo(isMarked, parts[NAME_INDEX]);
+            default -> throw new IOException("Unsupported task type: " + parts[TASK_TYPE_INDEX]);
         };
     }
 }

@@ -3,8 +3,10 @@ package fifi;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -68,6 +70,22 @@ public class StorageTest {
         assertEquals("[D][ ] return book (by: Dec 02 2019)", loadedTasks.get(1).toString());
         assertEquals("[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)",
                 loadedTasks.get(2).toString());
+    }
+
+    @Test
+    public void loadTasks_unknownTaskCode_exceptionThrownAndLaterValidDataLoads() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+
+        Files.writeString(dataFile, "T | 0 | read book");
+        assertInstanceOf(ToDo.class, storage.loadTasks().get(0));
+
+        Files.writeString(dataFile, "X | 0 | unsupported task");
+        IOException exception = assertThrows(IOException.class, storage::loadTasks);
+        assertEquals("Unsupported task type: X", exception.getMessage());
+
+        Files.writeString(dataFile, "D | 0 | return book | 2019-12-02");
+        assertInstanceOf(Deadline.class, storage.loadTasks().get(0));
     }
 
     @Test

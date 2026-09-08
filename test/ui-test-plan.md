@@ -2,6 +2,46 @@
 
 Record console UI test cases here. Each case must include an aim, inputs, and exact expected output.
 
+## Rejects Unsupported Saved Task Type
+
+Aim: Check that an unsupported saved task type is not silently loaded as a todo and that the chatbot still starts.
+
+Initial data file:
+```text
+X | 0 | unsupported task
+```
+
+Inputs:
+```text
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+X | 0 | unsupported task
+```
+
 ## Preserves Event Validation Order And Recovery
 
 Aim: Check that blank and reversed event markers preserve error messages, valid events still work after errors, and rejected events do not change saved tasks.
