@@ -1,6 +1,6 @@
 ---
 name: seedu-git-standard
-description: Apply the SE-EDU Git conventions to this project. Use whenever Codex proposes, reviews, writes, amends, or explains commit messages, merge commit messages, branch names, tags, or Git workflows in this repository.
+description: Apply the SE-EDU Git conventions to this project. Use whenever Codex proposes, reviews, directly writes, amends, or explains commit messages, merge commit messages, branch names, tags, or Git workflows in this repository.
 ---
 
 # SE-EDU Git Standard

@@ -11,20 +11,20 @@ import fifi.task.Task;
  * Marks a task as done.
  */
 public class MarkCommand extends Command {
-    private final int taskNumber;
+    private final int taskIndex;
 
     /**
      * Creates a command that marks the task at the given zero-based index.
      *
-     * @param taskNumber the zero-based task number
+     * @param taskIndex the zero-based task index
      */
-    public MarkCommand(int taskNumber) {
-        this.taskNumber = taskNumber;
+    public MarkCommand(int taskIndex) {
+        this.taskIndex = taskIndex;
     }
 
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
-        Task currentTask = tasks.get(taskNumber);
+        Task currentTask = tasks.get(taskIndex);
         currentTask.mark();
         // Every task implementation must honor mark() before its state is saved or reported.
         assert currentTask.isMarked() : "A task must be marked after mark()";

@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fifi.exception.ExcessiveTaskException;
-import fifi.task.Deadline;
-import fifi.task.Event;
 import fifi.task.Task;
 
 /**
@@ -15,7 +13,7 @@ import fifi.task.Task;
 public class TaskList {
     private static final int MAX_TASKS = 100;
 
-    private final ArrayList<Task> tasks;
+    private final List<Task> tasks;
 
     /**
      * Creates an empty task list.
@@ -29,8 +27,8 @@ public class TaskList {
      *
      * @param tasks the tasks to keep in this list
      */
-    public TaskList(ArrayList<Task> tasks) {
-        this.tasks = tasks;
+    public TaskList(List<Task> tasks) {
+        this.tasks = new ArrayList<>(tasks);
     }
 
     /**
@@ -63,22 +61,22 @@ public class TaskList {
     /**
      * Returns the task at the given zero-based index.
      *
-     * @param taskNumber the zero-based task number
+     * @param taskIndex the zero-based task index
      * @return the task at that index
      */
-    public Task get(int taskNumber) {
-        return tasks.get(taskNumber);
+    public Task get(int taskIndex) {
+        return tasks.get(taskIndex);
     }
 
     /**
      * Deletes and returns the task at the given zero-based index.
      *
-     * @param taskNumber the zero-based task number
+     * @param taskIndex the zero-based task index
      * @return the deleted task
      */
-    public Task delete(int taskNumber) {
+    public Task delete(int taskIndex) {
         int previousSize = tasks.size();
-        Task removedTask = tasks.remove(taskNumber);
+        Task removedTask = tasks.remove(taskIndex);
         // Deletion must remove exactly one entry so subsequent task numbers stay consistent.
         assert tasks.size() == previousSize - 1 : "Deleting a task must reduce the task count by one";
         return removedTask;
@@ -93,7 +91,7 @@ public class TaskList {
     public TaskList getTasksOccurringOn(LocalDate showDate) {
         ArrayList<Task> occurringTasks = new ArrayList<>();
         for (Task task : tasks) {
-            if (isOccurringOn(task, showDate)) {
+            if (task.occursOn(showDate)) {
                 occurringTasks.add(task);
             }
         }
@@ -139,17 +137,5 @@ public class TaskList {
      */
     public List<Task> asList() {
         return List.copyOf(tasks);
-    }
-
-    private boolean isOccurringOn(Task task, LocalDate showDate) {
-        if (task instanceof Deadline deadline) {
-            return deadline.getDueDate().isEqual(showDate);
-        }
-        if (task instanceof Event event) {
-            LocalDate startDate = event.getStart();
-            LocalDate endDate = event.getEnd();
-            return !showDate.isBefore(startDate) && !showDate.isAfter(endDate);
-        }
-        return false;
     }
 }
