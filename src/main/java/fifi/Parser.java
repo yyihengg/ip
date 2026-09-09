@@ -16,6 +16,7 @@ import fifi.command.FindCommand;
 import fifi.command.ListCommand;
 import fifi.command.MarkCommand;
 import fifi.command.ShowCommand;
+import fifi.command.StatisticsCommand;
 import fifi.command.UnmarkCommand;
 import fifi.exception.InvalidCommandException;
 import fifi.exception.InvalidDescriptionException;
@@ -59,9 +60,10 @@ public class Parser {
             case "delete" -> new DeleteCommand(parseTaskIndex(arguments, command));
             case "show" -> new ShowCommand(parseDateArgument(arguments));
             case "find" -> new FindCommand(parseFindKeyword(arguments));
+            case "stats" -> parseStatistics(arguments);
             default -> throw new InvalidCommandException("""
                         UhOh, this command is invalid, please enter a valid one!
-                        Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find"\
+                        Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find, stats"\
                         """);
         };
     }
@@ -161,6 +163,18 @@ public class Parser {
             throw new InvalidDescriptionException("Oops! You did not provide a keyword to find");
         }
         return arguments;
+    }
+
+    private static Command parseStatistics(String arguments) throws InvalidDescriptionException {
+        if (arguments.isBlank() || arguments.equals("all")) {
+            return new StatisticsCommand();
+        }
+        String[] parts = arguments.split("\\s+", 2);
+        if (parts[0].equals("since") && parts.length == 2 && !parts[1].isBlank()) {
+            return new StatisticsCommand(parseDate(parts[1]));
+        }
+        throw new InvalidDescriptionException(
+                "Oops! Use stats, stats all, or stats since yyyy-MM-dd.");
     }
 
     /**

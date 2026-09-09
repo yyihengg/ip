@@ -10,8 +10,10 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.AfterEach;
@@ -253,6 +255,46 @@ public class CommandTest {
         assertOutputContains(output, "Here are the matching tasks in your list:\n"
                 + "1. [T][ ] read book\n"
                 + "2. [D][ ] return book (by: Dec 02 2019)");
+    }
+
+    @Test
+    public void execute_statisticsCommand_statusesPrinted() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        LocalDateTime now = LocalDateTime.of(2026, 9, 9, 15, 0);
+        Clock clock = Clock.fixed(now.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+        ArrayList<Task> tasks = new ArrayList<>();
+        tasks.add(new ToDo(true, "done", now.minusDays(1), now));
+        tasks.add(new Deadline(false, "late", LocalDate.of(2026, 9, 8), now.minusDays(1), null));
+        tasks.add(new Event(false, "today", LocalDate.of(2026, 9, 9),
+                LocalDate.of(2026, 9, 9), now.minusDays(1), null));
+
+        new StatisticsCommand(null, clock).execute(new TaskList(tasks), new Ui(), getUnusedStorage());
+
+        assertOutputContains(output, """
+                Task statistics for all tasks:
+                Total tasks: 3
+                Completed tasks: 1
+                Incomplete tasks: 2
+                Completion rate: 33%""");
+        assertOutputContains(output, "Overdue: 1");
+        assertOutputContains(output, "Ongoing: 1");
+        assertOutputContains(output, "Past: 0");
+    }
+
+    @Test
+    public void execute_statisticsSince_exclusionReported() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        LocalDateTime now = LocalDateTime.of(2026, 9, 9, 15, 0);
+        Clock clock = Clock.fixed(now.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo(false, "legacy", null, null));
+
+        new StatisticsCommand(LocalDate.of(2026, 9, 2), clock)
+                .execute(tasks, new Ui(), getUnusedStorage());
+
+        assertOutputContains(output, "Task statistics for tasks created since Sep 02 2026:");
+        assertOutputContains(output, "Total tasks: 0");
+        assertOutputContains(output, "Excluded legacy tasks with unknown creation times: 1");
     }
 
     @Test

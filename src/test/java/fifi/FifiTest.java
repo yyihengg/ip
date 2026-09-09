@@ -63,7 +63,22 @@ public class FifiTest {
 
         assertEquals("""
                 UhOh, this command is invalid, please enter a valid one!
-                Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find\"""", response);
+                Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find, stats\"""",
+                response);
+    }
+
+    @Test
+    public void getResponse_statsCommand_multilineStatisticsReturned() {
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        fifi.getResponse("todo read book");
+        fifi.getResponse("mark 1");
+
+        String response = fifi.getResponse("stats");
+
+        assertTrue(response.contains("Task statistics for all tasks:"));
+        assertTrue(response.contains("Total tasks: 1"));
+        assertTrue(response.contains("Completed tasks: 1"));
+        assertTrue(normalizeLineEndings(response).contains("Todos:\nCompleted: 1"));
     }
 
     @Test

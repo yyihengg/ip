@@ -116,6 +116,44 @@ public class TaskStatistics {
         return excludedUnknownCreationTimes;
     }
 
+    /**
+     * Returns a multiline summary suitable for both console and graphical interfaces.
+     *
+     * @param heading description of the tasks included in these statistics
+     * @return formatted statistics with an optional legacy-data note
+     */
+    public String toDisplayString(String heading) {
+        String summary = String.format("""
+                %s
+                Total tasks: %d
+                Completed tasks: %d
+                Incomplete tasks: %d
+                Completion rate: %d%%
+
+                Todos:
+                Completed: %d
+                Incomplete: %d
+
+                Deadlines:
+                Completed: %d
+                Pending: %d
+                Overdue: %d
+
+                Events:
+                Completed: %d
+                Upcoming: %d
+                Ongoing: %d
+                Past: %d""",
+                heading, totalTasks, completedTasks, getIncompleteTasks(), getCompletionRate(),
+                todoCompleted, todoIncomplete, deadlineCompleted, deadlinePending, deadlineOverdue,
+                eventCompleted, eventUpcoming, eventOngoing, eventPast);
+        if (excludedUnknownCreationTimes == 0) {
+            return summary;
+        }
+        return summary + String.format("%n%nExcluded legacy tasks with unknown creation times: %d",
+                excludedUnknownCreationTimes);
+    }
+
     private static int countTasks(List<Task> tasks, java.util.function.Predicate<Task> condition) {
         return (int) tasks.stream().filter(condition).count();
     }
