@@ -100,11 +100,6 @@ ____________________________________________________________
 
 ```
 
-Expected data file:
-```text
-E | 0 | team meeting | 2025-10-01 | 2025-10-03
-```
-
 ## Rejects Malformed Task Numbers And Continues
 
 Aim: Check that missing numbers, words, extra text, and integer overflow show helpful errors without changing tasks, and valid commands still work afterward.
@@ -289,11 +284,6 @@ ____________________________________________________________
 
 ```
 
-Expected data file:
-```text
-T | 0 | borrow book
-```
-
 ## Adds Deadline And Lists
 
 Aim: Check that the deadline command stores a deadline task and list displays its by value.
@@ -329,11 +319,6 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
-```
-
-Expected data file:
-```text
-D | 0 | return book | 2019-12-02
 ```
 
 ## Rejects Deadline Without Date
@@ -401,11 +386,6 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
-```
-
-Expected data file:
-```text
-E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
 ## Shows Tasks On Date
@@ -620,11 +600,6 @@ ____________________________________________________________
 
 ```
 
-Expected data file:
-```text
-T | 0 | borrow book
-```
-
 ## Rejects Invalid Command
 
 Aim: Check that an unknown command shows the invalid command message and then continues accepting commands.
@@ -710,12 +685,6 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
-```
-
-Expected data file:
-```text
-T | 0 | read book
-E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
 ## Finds Tasks By Keyword

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +59,8 @@ public class StorageTest {
         Event event = (Event) loadedTasks.get(2);
         assertTrue(todo.isMarked());
         assertEquals("read book", todo.getDescription());
+        assertTrue(todo.getCreatedAt().isEmpty());
+        assertTrue(todo.getLastMarkedAt().isEmpty());
         assertFalse(deadline.isMarked());
         assertEquals("return book", deadline.getDescription());
         assertEquals(LocalDate.of(2019, 12, 2), deadline.getDueDate());
@@ -97,9 +100,9 @@ public class StorageTest {
         storage.saveTasks(tasks);
 
         assertEquals(String.join(System.lineSeparator(),
-                "T | 1 | read book",
-                "D | 0 | return book | 2019-12-02",
-                "E | 0 | project meeting | 2019-12-02 | 2019-12-04"),
+                "T | 1 | read book | 2019-11-29T08:00:00 | 2019-12-01T17:00:00",
+                "D | 0 | return book | 2019-12-02 | 2019-11-30T09:00:00 | -",
+                "E | 0 | project meeting | 2019-12-02 | 2019-12-04 | 2019-12-01T10:00:00 | -"),
                 Files.readString(dataFile));
     }
 
@@ -116,14 +119,32 @@ public class StorageTest {
         assertEquals("[D][ ] return book (by: Dec 02 2019)", loadedTasks.get(1).toString());
         assertEquals("[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)",
                 loadedTasks.get(2).toString());
+        assertEquals(LocalDateTime.of(2019, 11, 29, 8, 0),
+                loadedTasks.get(0).getCreatedAt().orElseThrow());
+        assertEquals(LocalDateTime.of(2019, 12, 1, 17, 0),
+                loadedTasks.get(0).getLastMarkedAt().orElseThrow());
+        assertTrue(loadedTasks.get(1).getLastMarkedAt().isEmpty());
+    }
+
+    @Test
+    public void loadTasks_invalidTimestamp_exceptionThrown() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Files.writeString(dataFile, "T | 0 | read book | yesterday | -");
+
+        IOException exception = assertThrows(IOException.class,
+                () -> new Storage(dataFile.toString()).loadTasks());
+
+        assertEquals("Invalid saved task: T | 0 | read book | yesterday | -", exception.getMessage());
     }
 
     private ArrayList<Task> getSampleTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
-        tasks.add(new ToDo(true, "read book"));
-        tasks.add(new Deadline(false, "return book", LocalDate.of(2019, 12, 2)));
+        tasks.add(new ToDo(true, "read book", LocalDateTime.of(2019, 11, 29, 8, 0),
+                LocalDateTime.of(2019, 12, 1, 17, 0)));
+        tasks.add(new Deadline(false, "return book", LocalDate.of(2019, 12, 2),
+                LocalDateTime.of(2019, 11, 30, 9, 0), null));
         tasks.add(new Event(false, "project meeting", LocalDate.of(2019, 12, 2),
-                LocalDate.of(2019, 12, 4)));
+                LocalDate.of(2019, 12, 4), LocalDateTime.of(2019, 12, 1, 10, 0), null));
         return tasks;
     }
 }

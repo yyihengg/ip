@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +44,8 @@ public class CommandTest {
 
     @Test
     public void isExit_addTodoCommand_falseReturned() {
-        Command command = new AddTodoCommand(new ToDo(false, "read book"));
+        Command command = new AddTodoCommand(new ToDo(false, "read book",
+                LocalDateTime.of(2025, 1, 1, 9, 0), null));
 
         assertFalse(command.isExit());
     }
@@ -52,23 +54,26 @@ public class CommandTest {
     public void execute_addTodoCommand_taskAddedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList();
-        Command command = new AddTodoCommand(new ToDo(false, "read book"));
+        Command command = new AddTodoCommand(new ToDo(false, "read book",
+                LocalDateTime.of(2025, 1, 1, 9, 0), null));
 
         command.execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
         assertEquals(1, tasks.size());
-        assertEquals("T | 0 | read book", Files.readString(dataFile));
+        assertEquals("T | 0 | read book | 2025-01-01T09:00:00 | -", Files.readString(dataFile));
     }
 
     @Test
     public void execute_addDeadlineCommand_deadlineAddedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList();
-        Command command = new AddDeadlineCommand(new Deadline(false, "return book", LocalDate.of(2019, 12, 2)));
+        Command command = new AddDeadlineCommand(new Deadline(false, "return book", LocalDate.of(2019, 12, 2),
+                LocalDateTime.of(2019, 11, 30, 9, 0), null));
 
         command.execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
-        assertEquals("D | 0 | return book | 2019-12-02", Files.readString(dataFile));
+        assertEquals("D | 0 | return book | 2019-12-02 | 2019-11-30T09:00:00 | -",
+                Files.readString(dataFile));
     }
 
     @Test
@@ -76,11 +81,12 @@ public class CommandTest {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList();
         Command command = new AddEventCommand(new Event(false, "meeting", LocalDate.of(2019, 12, 2),
-                LocalDate.of(2019, 12, 4)));
+                LocalDate.of(2019, 12, 4), LocalDateTime.of(2019, 12, 1, 10, 0), null));
 
         command.execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
-        assertEquals("E | 0 | meeting | 2019-12-02 | 2019-12-04", Files.readString(dataFile));
+        assertEquals("E | 0 | meeting | 2019-12-02 | 2019-12-04 | 2019-12-01T10:00:00 | -",
+                Files.readString(dataFile));
     }
 
     @Test
@@ -97,7 +103,8 @@ public class CommandTest {
         assertEquals(LocalDate.of(2025, 10, 1), event.getStart());
         assertEquals(LocalDate.of(2025, 10, 3), event.getEnd());
         assertFalse(event.isMarked());
-        assertEquals("E | 0 | team meeting | 2025-10-01 | 2025-10-03", Files.readString(dataFile));
+        assertTrue(Files.readString(dataFile)
+                .startsWith("E | 0 | team meeting | 2025-10-01 | 2025-10-03 | "));
     }
 
     @Test
@@ -114,11 +121,10 @@ public class CommandTest {
         assertThrows(InvalidDescriptionException.class, () -> Parser.parse("event event planning /to 2025-10-03"));
         Parser.parse("event event planning /from 2025-10-01 /to 2025-10-03").execute(tasks, ui, storage);
 
-        assertEquals(String.join(System.lineSeparator(),
-                "T | 0 | todo deadline event",
-                "D | 0 | deadline review | 2025-10-15",
-                "E | 0 | event planning | 2025-10-01 | 2025-10-03"),
-                Files.readString(dataFile));
+        String savedTasks = Files.readString(dataFile);
+        assertTrue(savedTasks.contains("T | 0 | todo deadline event | "));
+        assertTrue(savedTasks.contains("D | 0 | deadline review | 2025-10-15 | "));
+        assertTrue(savedTasks.contains("E | 0 | event planning | 2025-10-01 | 2025-10-03 | "));
     }
 
     @Test
@@ -143,7 +149,7 @@ public class CommandTest {
 
         assertTrue(tasks.get(0).isMarked());
         assertFalse(tasks.get(1).isMarked());
-        assertEquals("T | 1 | read book", firstSavedLine(dataFile));
+        assertTrue(firstSavedLine(dataFile).startsWith("T | 1 | read book | 2019-11-29T08:00:00 | "));
     }
 
     @Test
@@ -161,7 +167,7 @@ public class CommandTest {
         storage.saveTasks(tasks);
 
         assertThrows(AssertionError.class, () -> new MarkCommand(0).execute(tasks, new Ui(), storage));
-        assertEquals("T | 0 | read book", Files.readString(dataFile));
+        assertTrue(Files.readString(dataFile).startsWith("T | 0 | read book | "));
         assertEquals("", output.toString(StandardCharsets.UTF_8));
 
         tasks.add(new ToDo(false, "working task"));
@@ -173,15 +179,19 @@ public class CommandTest {
     @Test
     public void execute_unmarkCommand_existingTask_taskUnmarkedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
-        ArrayList<Task> sampleTasks = getSampleTasks();
-        sampleTasks.get(0).mark();
-        TaskList tasks = new TaskList(sampleTasks);
+        ArrayList<Task> markedTasks = new ArrayList<>();
+        markedTasks.add(new ToDo(true, "read book", LocalDateTime.of(2019, 11, 29, 8, 0),
+                LocalDateTime.of(2019, 12, 1, 17, 0)));
+        markedTasks.add(new Deadline(false, "return book", LocalDate.of(2019, 12, 2),
+                LocalDateTime.of(2019, 11, 30, 9, 0), null));
+        TaskList tasks = new TaskList(markedTasks);
 
         new UnmarkCommand(0).execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
         assertFalse(tasks.get(0).isMarked());
         assertFalse(tasks.get(1).isMarked());
-        assertEquals("T | 0 | read book", firstSavedLine(dataFile));
+        assertEquals("T | 0 | read book | 2019-11-29T08:00:00 | 2019-12-01T17:00:00",
+                firstSavedLine(dataFile));
     }
 
     @Test
@@ -199,7 +209,7 @@ public class CommandTest {
         storage.saveTasks(tasks);
 
         assertThrows(AssertionError.class, () -> new UnmarkCommand(0).execute(tasks, new Ui(), storage));
-        assertEquals("T | 1 | read book", Files.readString(dataFile));
+        assertTrue(Files.readString(dataFile).startsWith("T | 1 | read book | "));
         assertEquals("", output.toString(StandardCharsets.UTF_8));
 
         tasks.add(new ToDo(true, "working task"));
@@ -217,8 +227,8 @@ public class CommandTest {
 
         assertEquals(2, tasks.size());
         assertEquals(String.join(System.lineSeparator(),
-                "T | 0 | read book",
-                "E | 0 | project meeting | 2019-12-02 | 2019-12-04"),
+                "T | 0 | read book | 2019-11-29T08:00:00 | 2019-12-01T17:00:00",
+                "E | 0 | project meeting | 2019-12-02 | 2019-12-04 | 2019-12-01T10:00:00 | -"),
                 Files.readString(dataFile));
     }
 
@@ -277,10 +287,12 @@ public class CommandTest {
 
     private ArrayList<Task> getSampleTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
-        tasks.add(new ToDo(false, "read book"));
-        tasks.add(new Deadline(false, "return book", LocalDate.of(2019, 12, 2)));
+        tasks.add(new ToDo(false, "read book", LocalDateTime.of(2019, 11, 29, 8, 0),
+                LocalDateTime.of(2019, 12, 1, 17, 0)));
+        tasks.add(new Deadline(false, "return book", LocalDate.of(2019, 12, 2),
+                LocalDateTime.of(2019, 11, 30, 9, 0), null));
         tasks.add(new Event(false, "project meeting", LocalDate.of(2019, 12, 2),
-                LocalDate.of(2019, 12, 4)));
+                LocalDate.of(2019, 12, 4), LocalDateTime.of(2019, 12, 1, 10, 0), null));
         return tasks;
     }
 

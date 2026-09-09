@@ -1,6 +1,7 @@
 package fifi.task;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import fifi.Parser;
 
@@ -22,6 +23,21 @@ public class Deadline extends Task {
         this.dueDate = dueDate;
     }
 
+    /**
+     * Creates a deadline using timestamps loaded from storage.
+     *
+     * @param marked whether the deadline has been completed
+     * @param description description of the deadline
+     * @param dueDate date when the deadline is due
+     * @param createdAt exact time when the deadline was created, or null when unknown
+     * @param lastMarkedAt exact time when the deadline was last completed, or null when never completed or unknown
+     */
+    public Deadline(boolean marked, String description, LocalDate dueDate,
+            LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
+        super(marked, description, createdAt, lastMarkedAt);
+        this.dueDate = dueDate;
+    }
+
     public LocalDate getDueDate() {
         return this.dueDate;
     }
@@ -38,8 +54,8 @@ public class Deadline extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("D | %s | %s | %s", getMarkedStatus(), getDescription(),
-                Parser.formatDateForStorage(getDueDate()));
+        return String.format("D | %s | %s | %s | %s", getMarkedStatus(), getDescription(),
+                Parser.formatDateForStorage(getDueDate()), getTimestampFields());
     }
 
     @Override
