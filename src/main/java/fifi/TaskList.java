@@ -1,6 +1,7 @@
 package fifi;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -105,6 +106,36 @@ public class TaskList {
                 .filter(task -> task.getDescription().contains(keyword))
                 .collect(Collectors.toCollection(ArrayList::new));
         return new TaskList(matchingTasks);
+    }
+
+    /**
+     * Calculates a current status breakdown for all tasks in the list.
+     *
+     * @param now date and time at which the statistics are requested
+     * @return statistics for every task in the list
+     */
+    public TaskStatistics getStatistics(LocalDateTime now) {
+        return TaskStatistics.calculate(tasks, now.toLocalDate(), 0);
+    }
+
+    /**
+     * Calculates a current status breakdown for tasks created during the requested period.
+     *
+     * @param startDate first creation date included in the period
+     * @param now end of the period and time at which statuses are classified
+     * @return statistics for tasks created from the start date through now
+     */
+    public TaskStatistics getStatisticsSince(LocalDate startDate, LocalDateTime now) {
+        LocalDateTime periodStart = startDate.atStartOfDay();
+        List<Task> tasksInPeriod = tasks.stream()
+                .filter(task -> task.getCreatedAt()
+                        .map(createdAt -> !createdAt.isBefore(periodStart) && !createdAt.isAfter(now))
+                        .orElse(false))
+                .toList();
+        int unknownCreationTimes = (int) tasks.stream()
+                .filter(task -> task.getCreatedAt().isEmpty())
+                .count();
+        return TaskStatistics.calculate(tasksInPeriod, now.toLocalDate(), unknownCreationTimes);
     }
 
     /**
