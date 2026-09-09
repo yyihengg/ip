@@ -3,6 +3,7 @@ package fifi;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import fifi.exception.ExcessiveTaskException;
 import fifi.task.Task;
@@ -54,8 +55,6 @@ public class TaskList {
                     """);
         }
         tasks.add(task);
-        // The capacity check above must keep every successful addition within the limit.
-        assert tasks.size() <= MAX_TASKS : "Adding a task must not exceed the task limit";
     }
 
     /**
@@ -89,12 +88,9 @@ public class TaskList {
      * @return a task list containing matching deadlines and events
      */
     public TaskList getTasksOccurringOn(LocalDate showDate) {
-        ArrayList<Task> occurringTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.occursOn(showDate)) {
-                occurringTasks.add(task);
-            }
-        }
+        ArrayList<Task> occurringTasks = tasks.stream()
+                .filter(task -> task.occursOn(showDate))
+                .collect(Collectors.toCollection(ArrayList::new));
         return new TaskList(occurringTasks);
     }
 
@@ -105,12 +101,9 @@ public class TaskList {
      * @return a task list containing matching tasks
      */
     public TaskList findTasksByKeyword(String keyword) {
-        ArrayList<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.getDescription().contains(keyword)) {
-                matchingTasks.add(task);
-            }
-        }
+        ArrayList<Task> matchingTasks = tasks.stream()
+                .filter(task -> task.getDescription().contains(keyword))
+                .collect(Collectors.toCollection(ArrayList::new));
         return new TaskList(matchingTasks);
     }
 

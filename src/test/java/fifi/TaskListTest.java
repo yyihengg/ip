@@ -106,6 +106,7 @@ public class TaskListTest {
                 1. [D][ ] return book (by: Dec 02 2019)
                 2. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)""",
                 matchingTasks.toDisplayString());
+        assertEquals(3, tasks.size());
     }
 
     @Test
@@ -141,6 +142,7 @@ public class TaskListTest {
                 1. [T][ ] read book
                 2. [D][ ] return book (by: Dec 02 2019)""",
                 matchingTasks.toDisplayString());
+        assertEquals(3, tasks.size());
     }
 
     @Test
