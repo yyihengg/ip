@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,17 +33,20 @@ public class EventTest {
     @Test
     public void toFileString_unmarkedEvent_eventStorageStringReturned() {
         Event event = new Event(false, "project meeting", LocalDate.of(2019, 12, 2),
-                LocalDate.of(2019, 12, 4));
+                LocalDate.of(2019, 12, 4), LocalDateTime.of(2019, 11, 30, 9, 0), null);
 
-        assertEquals("E | 0 | project meeting | 2019-12-02 | 2019-12-04", event.toFileString());
+        assertEquals("E | 0 | project meeting | 2019-12-02 | 2019-12-04 | 2019-11-30T09:00:00 | -",
+                event.toFileString());
     }
 
     @Test
     public void toFileString_markedEvent_markedEventStorageStringReturned() {
         Event event = new Event(true, "project meeting", LocalDate.of(2019, 12, 2),
-                LocalDate.of(2019, 12, 4));
+                LocalDate.of(2019, 12, 4), LocalDateTime.of(2019, 11, 30, 9, 0),
+                LocalDateTime.of(2019, 12, 3, 17, 0));
 
-        assertEquals("E | 1 | project meeting | 2019-12-02 | 2019-12-04", event.toFileString());
+        assertEquals("E | 1 | project meeting | 2019-12-02 | 2019-12-04 | "
+                + "2019-11-30T09:00:00 | 2019-12-03T17:00:00", event.toFileString());
     }
 
     @Test

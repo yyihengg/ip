@@ -1,6 +1,7 @@
 package fifi.task;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import fifi.Parser;
 
@@ -25,6 +26,23 @@ public class Event extends Task {
         this.end = end;
     }
 
+    /**
+     * Creates an event using timestamps loaded from storage.
+     *
+     * @param marked whether the event has been completed
+     * @param description description of the event
+     * @param start date when the event starts
+     * @param end date when the event ends
+     * @param createdAt exact time when the event was created, or null when unknown
+     * @param lastMarkedAt exact time when the event was last completed, or null when never completed or unknown
+     */
+    public Event(boolean marked, String description, LocalDate start, LocalDate end,
+            LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
+        super(marked, description, createdAt, lastMarkedAt);
+        this.start = start;
+        this.end = end;
+    }
+
     public LocalDate getStart() {
         return this.start;
     }
@@ -45,8 +63,8 @@ public class Event extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getDescription(),
-                Parser.formatDateForStorage(getStart()), Parser.formatDateForStorage(getEnd()));
+        return String.format("E | %s | %s | %s | %s | %s", getMarkedStatus(), getDescription(),
+                Parser.formatDateForStorage(getStart()), Parser.formatDateForStorage(getEnd()), getTimestampFields());
     }
 
     @Override

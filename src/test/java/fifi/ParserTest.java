@@ -21,6 +21,7 @@ import fifi.command.FindCommand;
 import fifi.command.ListCommand;
 import fifi.command.MarkCommand;
 import fifi.command.ShowCommand;
+import fifi.command.StatisticsCommand;
 import fifi.command.UnmarkCommand;
 import fifi.exception.InvalidCommandException;
 import fifi.exception.InvalidDescriptionException;
@@ -109,6 +110,20 @@ public class ParserTest {
         assertInstanceOf(FindCommand.class, Parser.parse("find book"));
     }
 
+    @Test
+    public void parse_statsCommands_statisticsCommandReturned() throws Exception {
+        assertInstanceOf(StatisticsCommand.class, Parser.parse("stats"));
+        assertInstanceOf(StatisticsCommand.class, Parser.parse("stats all"));
+        assertInstanceOf(StatisticsCommand.class, Parser.parse("stats since 2026-09-02"));
+    }
+
+    @Test
+    public void parse_statsWithInvalidArguments_exceptionThrown() {
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("stats week"));
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("stats since"));
+        assertThrows(DateTimeException.class, () -> Parser.parse("stats since 02-09-2026"));
+    }
+
     // ---------- parse: unrecognised commands ----------
 
     @Test
@@ -172,8 +187,8 @@ public class ParserTest {
         for (String[] invalidEvent : invalidEvents) {
             assertInstanceOf(AddEventCommand.class,
                     Parser.parse("event meeting /from 2025-10-01 /to 2025-10-03"));
-            InvalidDescriptionException exception = assertThrows(InvalidDescriptionException.class,
-                    () -> Parser.parse(invalidEvent[0]));
+            InvalidDescriptionException exception = assertThrows(InvalidDescriptionException.class, () ->
+                    Parser.parse(invalidEvent[0]));
             assertEquals(invalidEvent[1], exception.getMessage());
             assertInstanceOf(AddEventCommand.class,
                     Parser.parse("event meeting /from 2025-10-03 /to 2025-10-03"));
@@ -182,12 +197,12 @@ public class ParserTest {
 
     @Test
     public void parse_eventWithInvalidCalendarDate_dateExceptionAndNextCommandAccepted() throws Exception {
-        assertThrows(DateTimeException.class,
-                () -> Parser.parse("event meeting /from 2025-02-30 /to 2025-03-01"));
+        assertThrows(DateTimeException.class, () ->
+                Parser.parse("event meeting /from 2025-02-30 /to 2025-03-01"));
         assertInstanceOf(AddEventCommand.class,
                 Parser.parse("event meeting /from 2024-02-29 /to 2024-03-01"));
-        assertThrows(DateTimeException.class,
-                () -> Parser.parse("event meeting /from 2025-02-28 /to 2025-02-30"));
+        assertThrows(DateTimeException.class, () ->
+                Parser.parse("event meeting /from 2025-02-28 /to 2025-02-30"));
     }
 
     @Test

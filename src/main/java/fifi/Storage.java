@@ -3,6 +3,8 @@ package fifi;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -18,6 +20,7 @@ import fifi.task.ToDo;
 public class Storage {
     private static final String FIELD_SEPARATOR_REGEX = " \\| ";
     private static final String MARKED_STATUS = "1";
+    private static final String UNKNOWN_TIMESTAMP = "-";
     private static final String TODO_TASK_CODE = "T";
     private static final String DEADLINE_TASK_CODE = "D";
     private static final String EVENT_TASK_CODE = "E";
@@ -27,6 +30,12 @@ public class Storage {
     private static final int NAME_INDEX = 2;
     private static final int DATE_INDEX = 3;
     private static final int END_DATE_INDEX = 4;
+    private static final int TODO_CREATED_AT_INDEX = 3;
+    private static final int TODO_LAST_MARKED_AT_INDEX = 4;
+    private static final int DEADLINE_CREATED_AT_INDEX = 4;
+    private static final int DEADLINE_LAST_MARKED_AT_INDEX = 5;
+    private static final int EVENT_CREATED_AT_INDEX = 5;
+    private static final int EVENT_LAST_MARKED_AT_INDEX = 6;
 
     private final Path filePath;
 
@@ -88,13 +97,30 @@ public class Storage {
         String[] parts = savedTask.split(FIELD_SEPARATOR_REGEX);
         boolean isMarked = parts[STATUS_INDEX].equals(MARKED_STATUS);
 
-        return switch (parts[TASK_TYPE_INDEX]) {
-            case TODO_TASK_CODE -> new ToDo(isMarked, parts[NAME_INDEX]);
-            case DEADLINE_TASK_CODE -> new Deadline(isMarked, parts[NAME_INDEX],
-                    Parser.parseDate(parts[DATE_INDEX]));
-            case EVENT_TASK_CODE -> new Event(isMarked, parts[NAME_INDEX],
-                    Parser.parseDate(parts[DATE_INDEX]), Parser.parseDate(parts[END_DATE_INDEX]));
-            default -> throw new IOException("Unsupported task type: " + parts[TASK_TYPE_INDEX]);
-        };
+        try {
+            return switch (parts[TASK_TYPE_INDEX]) {
+                case TODO_TASK_CODE -> new ToDo(isMarked, parts[NAME_INDEX],
+                        parseOptionalTimestamp(parts, TODO_CREATED_AT_INDEX),
+                        parseOptionalTimestamp(parts, TODO_LAST_MARKED_AT_INDEX));
+                case DEADLINE_TASK_CODE -> new Deadline(isMarked, parts[NAME_INDEX],
+                        Parser.parseDate(parts[DATE_INDEX]),
+                        parseOptionalTimestamp(parts, DEADLINE_CREATED_AT_INDEX),
+                        parseOptionalTimestamp(parts, DEADLINE_LAST_MARKED_AT_INDEX));
+                case EVENT_TASK_CODE -> new Event(isMarked, parts[NAME_INDEX],
+                        Parser.parseDate(parts[DATE_INDEX]), Parser.parseDate(parts[END_DATE_INDEX]),
+                        parseOptionalTimestamp(parts, EVENT_CREATED_AT_INDEX),
+                        parseOptionalTimestamp(parts, EVENT_LAST_MARKED_AT_INDEX));
+                default -> throw new IOException("Unsupported task type: " + parts[TASK_TYPE_INDEX]);
+            };
+        } catch (ArrayIndexOutOfBoundsException | DateTimeParseException exception) {
+            throw new IOException("Invalid saved task: " + savedTask, exception);
+        }
+    }
+
+    private LocalDateTime parseOptionalTimestamp(String[] parts, int index) {
+        if (index >= parts.length || parts[index].equals(UNKNOWN_TIMESTAMP)) {
+            return null;
+        }
+        return LocalDateTime.parse(parts[index]);
     }
 }

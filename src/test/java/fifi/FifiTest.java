@@ -63,7 +63,22 @@ public class FifiTest {
 
         assertEquals("""
                 UhOh, this command is invalid, please enter a valid one!
-                Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find\"""", response);
+                Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find, stats\"""",
+                response);
+    }
+
+    @Test
+    public void getResponse_statsCommand_multilineStatisticsReturned() {
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        fifi.getResponse("todo read book");
+        fifi.getResponse("mark 1");
+
+        String response = fifi.getResponse("stats");
+
+        assertTrue(response.contains("Task statistics for all tasks:"));
+        assertTrue(response.contains("Total tasks: 1"));
+        assertTrue(response.contains("Completed tasks: 1"));
+        assertTrue(normalizeLineEndings(response).contains("Todos:\nCompleted: 1"));
     }
 
     @Test
@@ -71,7 +86,7 @@ public class FifiTest {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         Fifi fifi = new Fifi(dataFile.toString());
         fifi.getResponse("todo read book");
-        assertEquals("T | 0 | read book", Files.readString(dataFile));
+        assertTrue(Files.readString(dataFile).startsWith("T | 0 | read book | "));
 
         String[] commands = {"mark", "unmark", "delete"};
         for (String command : commands) {
@@ -84,12 +99,13 @@ public class FifiTest {
             assertEquals(displayedTasks, fifi.getResponse("list"));
 
             fifi.getResponse(command + " 1");
-            String expectedData = switch (command) {
-                case "mark" -> "T | 1 | read book";
-                case "unmark" -> "T | 0 | read book";
-                default -> "";
-            };
-            assertEquals(expectedData, Files.readString(dataFile));
+            String savedData = Files.readString(dataFile);
+            if (command.equals("delete")) {
+                assertEquals("", savedData);
+            } else {
+                String expectedStatus = command.equals("mark") ? "1" : "0";
+                assertTrue(savedData.startsWith("T | " + expectedStatus + " | read book | "));
+            }
         }
         assertEquals("BaiBai! Hope to see you soon ^^", fifi.getResponse("bye"));
         assertTrue(fifi.isExit());

@@ -100,11 +100,6 @@ ____________________________________________________________
 
 ```
 
-Expected data file:
-```text
-E | 0 | team meeting | 2025-10-01 | 2025-10-03
-```
-
 ## Rejects Malformed Task Numbers And Continues
 
 Aim: Check that missing numbers, words, extra text, and integer overflow show helpful errors without changing tasks, and valid commands still work afterward.
@@ -289,11 +284,6 @@ ____________________________________________________________
 
 ```
 
-Expected data file:
-```text
-T | 0 | borrow book
-```
-
 ## Adds Deadline And Lists
 
 Aim: Check that the deadline command stores a deadline task and list displays its by value.
@@ -329,11 +319,6 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
-```
-
-Expected data file:
-```text
-D | 0 | return book | 2019-12-02
 ```
 
 ## Rejects Deadline Without Date
@@ -401,11 +386,6 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
-```
-
-Expected data file:
-```text
-E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
 ## Shows Tasks On Date
@@ -620,11 +600,6 @@ ____________________________________________________________
 
 ```
 
-Expected data file:
-```text
-T | 0 | borrow book
-```
-
 ## Rejects Invalid Command
 
 Aim: Check that an unknown command shows the invalid command message and then continues accepting commands.
@@ -648,7 +623,7 @@ How may I help?
 ____________________________________________________________
 ____________________________________________________________
 UhOh, this command is invalid, please enter a valid one!
-Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find"
+Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find, stats"
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
@@ -710,12 +685,6 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
-```
-
-Expected data file:
-```text
-T | 0 | read book
-E | 0 | project meeting | 2019-12-02 | 2019-12-04
 ```
 
 ## Finds Tasks By Keyword
@@ -877,6 +846,169 @@ How may I help?
 ____________________________________________________________
 ____________________________________________________________
 Oops! You cannot have an empty event description
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Shows Statistics For All Tasks
+
+Aim: Check that stats all shows a clean status breakdown for the complete task list.
+
+Inputs:
+```text
+todo unfinished book
+todo finished book
+mark 2
+stats all
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] unfinished book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] finished book
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Nice! I've marked this task as done:
+[T][X] finished book
+____________________________________________________________
+____________________________________________________________
+Task statistics for all tasks:
+Total tasks: 2
+Completed tasks: 1
+Incomplete tasks: 1
+Completion rate: 50%
+
+Todos:
+Completed: 1
+Incomplete: 1
+
+Deadlines:
+Completed: 0
+Pending: 0
+Overdue: 0
+
+Events:
+Completed: 0
+Upcoming: 0
+Ongoing: 0
+Past: 0
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Shows Statistics Since Date
+
+Aim: Check that stats since includes the date boundary and reports legacy tasks omitted from the period.
+
+Initial data file:
+```text
+T | 0 | legacy task
+T | 1 | recent task | 2026-09-02T00:00:00 | 2026-09-03T12:00:00
+```
+
+Inputs:
+```text
+stats since 2026-09-02
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Task statistics for tasks created since Sep 02 2026:
+Total tasks: 1
+Completed tasks: 1
+Incomplete tasks: 0
+Completion rate: 100%
+
+Todos:
+Completed: 1
+Incomplete: 0
+
+Deadlines:
+Completed: 0
+Pending: 0
+Overdue: 0
+
+Events:
+Completed: 0
+Upcoming: 0
+Ongoing: 0
+Past: 0
+
+Excluded legacy tasks with unknown creation times: 1
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+T | 0 | legacy task
+T | 1 | recent task | 2026-09-02T00:00:00 | 2026-09-03T12:00:00
+```
+
+## Rejects Invalid Statistics Period
+
+Aim: Check that incomplete and unsupported stats periods show helpful input guidance.
+
+Inputs:
+```text
+stats since
+stats week
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! Use stats, stats all, or stats since yyyy-MM-dd.
+____________________________________________________________
+____________________________________________________________
+Oops! Use stats, stats all, or stats since yyyy-MM-dd.
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
