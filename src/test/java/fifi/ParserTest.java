@@ -62,19 +62,41 @@ public class ParserTest {
     }
 
     @Test
+    public void parse_taskNumberCommandsWithInvalidNumbers_helpfulExceptionAndRecovery() throws Exception {
+        String[] commands = {"mark", "unmark", "delete"};
+        String[] invalidNumbers = {"", "   ", "three", "1 read book", "1.5", "2147483648", "-2147483649"};
+        for (String command : commands) {
+            for (String invalidNumber : invalidNumbers) {
+                Class<? extends Command> expectedType = Parser.parse(command + " 1").getClass();
+                InvalidDescriptionException exception = assertThrows(
+                        InvalidDescriptionException.class, () -> Parser.parse(command + " " + invalidNumber));
+                assertEquals("Oops! Please enter a task number after " + command + ", e.g. " + command + " 1.",
+                        exception.getMessage());
+                assertInstanceOf(expectedType, Parser.parse(command + "   1"));
+            }
+            assertThrows(InvalidDescriptionException.class, () -> Parser.parse(command));
+        }
+    }
+
+    @Test
     public void parse_todoWithDescription_addTodoCommandReturned() throws Exception {
         assertInstanceOf(AddTodoCommand.class, Parser.parse("todo read book"));
+        assertInstanceOf(AddTodoCommand.class, Parser.parse("todo todo deadline event"));
     }
 
     @Test
     public void parse_deadlineWithDescriptionAndDate_addDeadlineCommandReturned() throws Exception {
         assertInstanceOf(AddDeadlineCommand.class, Parser.parse("deadline return book /by 2025-10-15"));
+        assertInstanceOf(AddDeadlineCommand.class,
+                Parser.parse("deadline deadline event planning /by 2025-10-15"));
     }
 
     @Test
     public void parse_eventWithDescriptionAndDates_addEventCommandReturned() throws Exception {
         assertInstanceOf(AddEventCommand.class,
                 Parser.parse("event career fair /from 2025-10-01 /to 2025-10-03"));
+        assertInstanceOf(AddEventCommand.class,
+                Parser.parse("event event deadline review /from 2025-10-01 /to 2025-10-03"));
     }
 
     @Test
@@ -134,6 +156,39 @@ public class ParserTest {
     }
 
     // ---------- parse: event ----------
+
+    @Test
+    public void parse_eventWithMissingFields_preservesErrorPriorityAndAcceptsNextCommand() throws Exception {
+        String[][] invalidEvents = {
+            {"event", "Oops! You did not provide an end date for the event"},
+            {"event meeting /from /to   ", "Oops! You did not provide an end date for the event"},
+            {"event meeting /to 2025-10-03", "Oops! You did not provide a start date for the event"},
+            {"event meeting /from   /to 2025-10-03", "Oops! You did not provide a start date for the event"},
+            {"event meeting /from/to 2025-10-03", "Oops! You did not provide a start date for the event"},
+            {"event meeting /to 2025-10-03 /from 2025-10-01",
+                "Oops! You did not provide a start date for the event"},
+            {"event /from invalid /to invalid", "Oops! You cannot have an empty event description"}
+        };
+        for (String[] invalidEvent : invalidEvents) {
+            assertInstanceOf(AddEventCommand.class,
+                    Parser.parse("event meeting /from 2025-10-01 /to 2025-10-03"));
+            InvalidDescriptionException exception = assertThrows(InvalidDescriptionException.class,
+                    () -> Parser.parse(invalidEvent[0]));
+            assertEquals(invalidEvent[1], exception.getMessage());
+            assertInstanceOf(AddEventCommand.class,
+                    Parser.parse("event meeting /from 2025-10-03 /to 2025-10-03"));
+        }
+    }
+
+    @Test
+    public void parse_eventWithInvalidCalendarDate_dateExceptionAndNextCommandAccepted() throws Exception {
+        assertThrows(DateTimeException.class,
+                () -> Parser.parse("event meeting /from 2025-02-30 /to 2025-03-01"));
+        assertInstanceOf(AddEventCommand.class,
+                Parser.parse("event meeting /from 2024-02-29 /to 2024-03-01"));
+        assertThrows(DateTimeException.class,
+                () -> Parser.parse("event meeting /from 2025-02-28 /to 2025-02-30"));
+    }
 
     @Test
     public void parse_eventWithoutToKeyword_exceptionThrown() {

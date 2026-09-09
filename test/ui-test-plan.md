@@ -2,6 +2,183 @@
 
 Record console UI test cases here. Each case must include an aim, inputs, and exact expected output.
 
+## Rejects Unsupported Saved Task Type
+
+Aim: Check that an unsupported saved task type is not silently loaded as a todo and that the chatbot still starts.
+
+Initial data file:
+```text
+X | 0 | unsupported task
+```
+
+Inputs:
+```text
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+X | 0 | unsupported task
+```
+
+## Preserves Event Validation Order And Recovery
+
+Aim: Check that blank and reversed event markers preserve error messages, valid events still work after errors, and rejected events do not change saved tasks.
+
+Inputs:
+```text
+event meeting /from /to
+event   team meeting   /from   2025-10-01   /to   2025-10-03
+event meeting /from   /to 2025-10-03
+list
+event meeting /to 2025-10-03 /from 2025-10-01
+event /from invalid /to invalid
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide an end date for the event
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[E][ ] team meeting (from: Oct 01 2025 to: Oct 03 2025)
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a start date for the event
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [E][ ] team meeting (from: Oct 01 2025 to: Oct 03 2025)
+____________________________________________________________
+____________________________________________________________
+Oops! You did not provide a start date for the event
+____________________________________________________________
+____________________________________________________________
+Oops! You cannot have an empty event description
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [E][ ] team meeting (from: Oct 01 2025 to: Oct 03 2025)
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+E | 0 | team meeting | 2025-10-01 | 2025-10-03
+```
+
+## Rejects Malformed Task Numbers And Continues
+
+Aim: Check that missing numbers, words, extra text, and integer overflow show helpful errors without changing tasks, and valid commands still work afterward.
+
+Inputs:
+```text
+todo read book
+mark three
+mark 1
+unmark
+unmark 1
+delete 1 read book
+list
+delete 2147483648
+delete 1
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] read book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after mark, e.g. mark 1.
+____________________________________________________________
+____________________________________________________________
+Nice! I've marked this task as done:
+[T][X] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after unmark, e.g. unmark 1.
+____________________________________________________________
+____________________________________________________________
+OK, I've marked this task as not done yet:
+[T][ ] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after delete, e.g. delete 1.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number after delete, e.g. delete 1.
+____________________________________________________________
+____________________________________________________________
+Got it. I've removed this task:
+    [T][ ] read book
+Now you have 0 tasks in the list ^^.
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+
+```
+
 ## Starts And Exits
 
 Aim: Check that the chatbot greets the user and exits when the user enters bye.

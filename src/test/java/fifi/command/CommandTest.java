@@ -2,6 +2,7 @@ package fifi.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -16,9 +17,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import fifi.Parser;
 import fifi.Storage;
 import fifi.TaskList;
 import fifi.Ui;
+import fifi.exception.InvalidDescriptionException;
 import fifi.task.Deadline;
 import fifi.task.Event;
 import fifi.task.Task;
@@ -81,7 +84,45 @@ public class CommandTest {
     }
 
     @Test
-    public void executeListCommand_existingTasks_taskListPrinted() throws Exception {
+    public void execute_parsedEventWithWhitespace_trimmedFieldsAddedAndSaved() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        TaskList tasks = new TaskList();
+        Command command = Parser.parse("event   team meeting   /from   2025-10-01   /to   2025-10-03   ");
+
+        command.execute(tasks, new Ui(), new Storage(dataFile.toString()));
+
+        assertEquals(1, tasks.size());
+        Event event = (Event) tasks.get(0);
+        assertEquals("team meeting", event.getDescription());
+        assertEquals(LocalDate.of(2025, 10, 1), event.getStart());
+        assertEquals(LocalDate.of(2025, 10, 3), event.getEnd());
+        assertFalse(event.isMarked());
+        assertEquals("E | 0 | team meeting | 2025-10-01 | 2025-10-03", Files.readString(dataFile));
+    }
+
+    @Test
+    public void execute_taskDescriptionsContainingCommandWords_fullDescriptionsSavedAfterInvalidInputs()
+            throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        TaskList tasks = new TaskList();
+        Ui ui = new Ui();
+        Storage storage = new Storage(dataFile.toString());
+
+        Parser.parse("todo todo deadline event").execute(tasks, ui, storage);
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("deadline deadline review"));
+        Parser.parse("deadline deadline review /by 2025-10-15").execute(tasks, ui, storage);
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parse("event event planning /to 2025-10-03"));
+        Parser.parse("event event planning /from 2025-10-01 /to 2025-10-03").execute(tasks, ui, storage);
+
+        assertEquals(String.join(System.lineSeparator(),
+                "T | 0 | todo deadline event",
+                "D | 0 | deadline review | 2025-10-15",
+                "E | 0 | event planning | 2025-10-01 | 2025-10-03"),
+                Files.readString(dataFile));
+    }
+
+    @Test
+    public void execute_listCommand_existingTasks_taskListPrinted() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ListCommand();
 
@@ -94,17 +135,43 @@ public class CommandTest {
     }
 
     @Test
-    public void executeMarkCommand_existingTask_taskMarkedAndSaved() throws Exception {
+    public void execute_markCommand_existingTask_taskMarkedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList(getSampleTasks());
 
         new MarkCommand(0).execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
+        assertTrue(tasks.get(0).isMarked());
+        assertFalse(tasks.get(1).isMarked());
         assertEquals("T | 1 | read book", firstSavedLine(dataFile));
     }
 
     @Test
-    public void executeUnmarkCommand_existingTask_taskUnmarkedAndSaved() throws Exception {
+    public void execute_brokenMarkTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo(false, "read book") {
+            @Override
+            public void mark() {
+                // Simulates a task implementation that violates the completion contract.
+            }
+        });
+        storage.saveTasks(tasks);
+
+        assertThrows(AssertionError.class, () -> new MarkCommand(0).execute(tasks, new Ui(), storage));
+        assertEquals("T | 0 | read book", Files.readString(dataFile));
+        assertEquals("", output.toString(StandardCharsets.UTF_8));
+
+        tasks.add(new ToDo(false, "working task"));
+        new MarkCommand(1).execute(tasks, new Ui(), storage);
+        assertTrue(tasks.get(1).isMarked());
+        assertTrue(Files.readString(dataFile).contains("T | 1 | working task"));
+    }
+
+    @Test
+    public void execute_unmarkCommand_existingTask_taskUnmarkedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         ArrayList<Task> sampleTasks = getSampleTasks();
         sampleTasks.get(0).mark();
@@ -112,11 +179,37 @@ public class CommandTest {
 
         new UnmarkCommand(0).execute(tasks, new Ui(), new Storage(dataFile.toString()));
 
+        assertFalse(tasks.get(0).isMarked());
+        assertFalse(tasks.get(1).isMarked());
         assertEquals("T | 0 | read book", firstSavedLine(dataFile));
     }
 
     @Test
-    public void executeDeleteCommand_existingTask_taskDeletedAndSaved() throws Exception {
+    public void execute_brokenUnmarkTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo(true, "read book") {
+            @Override
+            public void unmark() {
+                // Simulates a task implementation that violates the completion contract.
+            }
+        });
+        storage.saveTasks(tasks);
+
+        assertThrows(AssertionError.class, () -> new UnmarkCommand(0).execute(tasks, new Ui(), storage));
+        assertEquals("T | 1 | read book", Files.readString(dataFile));
+        assertEquals("", output.toString(StandardCharsets.UTF_8));
+
+        tasks.add(new ToDo(true, "working task"));
+        new UnmarkCommand(1).execute(tasks, new Ui(), storage);
+        assertFalse(tasks.get(1).isMarked());
+        assertTrue(Files.readString(dataFile).contains("T | 0 | working task"));
+    }
+
+    @Test
+    public void execute_deleteCommand_existingTask_taskDeletedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList(getSampleTasks());
 
@@ -130,7 +223,7 @@ public class CommandTest {
     }
 
     @Test
-    public void executeShowCommand_matchingDate_matchingTasksPrinted() throws Exception {
+    public void execute_showCommand_matchingDate_matchingTasksPrinted() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ShowCommand(LocalDate.of(2019, 12, 3));
 
@@ -141,7 +234,7 @@ public class CommandTest {
     }
 
     @Test
-    public void executeFindCommand_matchingKeyword_matchingTasksPrinted() throws Exception {
+    public void execute_findCommand_matchingKeyword_matchingTasksPrinted() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new FindCommand("book");
 
@@ -153,7 +246,7 @@ public class CommandTest {
     }
 
     @Test
-    public void executeExitCommand_noInput_exitMessagePrintedAndExitTrue() throws Exception {
+    public void execute_exitCommand_noInput_exitMessagePrintedAndExitTrue() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ExitCommand();
 

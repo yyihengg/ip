@@ -8,8 +8,8 @@ import fifi.Parser;
  * Represents a task that happens from one date or time to another.
  */
 public class Event extends Task {
-    protected LocalDate start;
-    protected LocalDate end;
+    private final LocalDate start;
+    private final LocalDate end;
 
     /**
      * Creates an event task with its completion status, description, start date, and end date.
@@ -31,6 +31,11 @@ public class Event extends Task {
 
     public LocalDate getEnd() {
         return this.end;
+    }
+
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return !date.isBefore(start) && !date.isAfter(end);
     }
 
     /**

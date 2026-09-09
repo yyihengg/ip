@@ -11,20 +11,20 @@ import fifi.task.Task;
  * Deletes a task from the task list.
  */
 public class DeleteCommand extends Command {
-    private final int taskNumber;
+    private final int taskIndex;
 
     /**
      * Creates a command that deletes the task at the given zero-based index.
      *
-     * @param taskNumber the zero-based task number
+     * @param taskIndex the zero-based task index
      */
-    public DeleteCommand(int taskNumber) {
-        this.taskNumber = taskNumber;
+    public DeleteCommand(int taskIndex) {
+        this.taskIndex = taskIndex;
     }
 
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
-        Task removedTask = tasks.delete(taskNumber);
+        Task removedTask = tasks.delete(taskIndex);
         storage.saveTasks(tasks);
         ui.showResponse(
                 "Got it. I've removed this task:",

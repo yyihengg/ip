@@ -1,13 +1,15 @@
 package fifi.task;
 
-/**
- * Represents one task in the chatbot's task list.
- */
-public class Task {
-    protected boolean marked;
-    protected final String description;
+import java.time.LocalDate;
 
-    Task(boolean marked, String description) {
+/**
+ * Provides common state and behavior for tasks in the chatbot's task list.
+ */
+public abstract class Task {
+    private boolean marked;
+    private final String description;
+
+    protected Task(boolean marked, String description) {
         this.marked = marked;
         this.description = description;
     }
@@ -44,13 +46,21 @@ public class Task {
     }
 
     /**
+     * Returns whether this task occurs on the given date.
+     *
+     * @param date the date to check
+     * @return false because a basic task has no associated date
+     */
+    public boolean occursOn(LocalDate date) {
+        return false;
+    }
+
+    /**
      * Returns the text format used to save this task on disk.
      *
      * @return the saved representation of this task
      */
-    public String toFileString() {
-        return String.format("T | %s | %s", getMarkedStatus(), getDescription());
-    }
+    public abstract String toFileString();
 
     @Override
     public String toString() {

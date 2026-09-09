@@ -28,6 +28,10 @@ import fifi.task.ToDo;
  * Converts raw user input into commands, task numbers, and task objects.
  */
 public class Parser {
+    private static final String DEADLINE_DATE_MARKER = "/by";
+    private static final String EVENT_START_MARKER = "/from";
+    private static final String EVENT_END_MARKER = "/to";
+
     private static final DateTimeFormatter INPUT_DATE_FORMATTER =
             DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter DISPLAY_DATE_FORMATTER =
@@ -39,21 +43,22 @@ public class Parser {
      * @param input the full line typed by the user
      * @return the command represented by the input
      * @throws InvalidCommandException if the command word is not recognized
-     * @throws InvalidDescriptionException if a command description is missing
+     * @throws InvalidDescriptionException if a command description is missing or a task number is not an integer
      */
     public static Command parse(String input) throws InvalidCommandException, InvalidDescriptionException {
         String command = parseCommand(input);
+        String arguments = parseArguments(input, command);
         return switch (command) {
             case "bye" -> new ExitCommand();
             case "list" -> new ListCommand();
-            case "mark" -> new MarkCommand(parseTaskNumber(input, "mark"));
-            case "unmark" -> new UnmarkCommand(parseTaskNumber(input, "unmark"));
-            case "todo" -> new AddTodoCommand(parseToDo(input));
-            case "deadline" -> new AddDeadlineCommand(parseDeadline(input));
-            case "event" -> new AddEventCommand(parseEvent(input));
-            case "delete" -> new DeleteCommand(parseTaskNumber(input, "delete"));
-            case "show" -> new ShowCommand(parseShowDate(input));
-            case "find" -> new FindCommand(parseFindKeyword(input));
+            case "mark" -> new MarkCommand(parseTaskIndex(arguments, command));
+            case "unmark" -> new UnmarkCommand(parseTaskIndex(arguments, command));
+            case "todo" -> new AddTodoCommand(parseToDo(arguments));
+            case "deadline" -> new AddDeadlineCommand(parseDeadline(arguments));
+            case "event" -> new AddEventCommand(parseEvent(arguments));
+            case "delete" -> new DeleteCommand(parseTaskIndex(arguments, command));
+            case "show" -> new ShowCommand(parseDateArgument(arguments));
+            case "find" -> new FindCommand(parseFindKeyword(arguments));
             default -> throw new InvalidCommandException("""
                         UhOh, this command is invalid, please enter a valid one!
                         Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find"\
@@ -81,11 +86,14 @@ public class Parser {
      * @throws DateTimeException if the date does not match the required format
      */
     public static LocalDate parseShowDate(String input) throws InvalidDescriptionException, DateTimeException {
-        String date = input.substring("show".length()).trim();
-        if (date.isBlank()) {
+        return parseDateArgument(parseArguments(input, "show"));
+    }
+
+    private static LocalDate parseDateArgument(String argument) throws InvalidDescriptionException {
+        if (argument.isBlank()) {
             throw new InvalidDescriptionException("Oops! You did not provide a date to show");
         }
-        return parseDate(date);
+        return parseDate(argument);
     }
 
     /**
@@ -118,95 +126,110 @@ public class Parser {
         return input.split(" ", 2)[0];
     }
 
+    private static String parseArguments(String input, String command) {
+        // The dispatcher must supply the matching command before this helper removes it.
+        assert parseCommand(input).equals(command) : "Argument parsing must use the dispatched command";
+        return input.substring(command.length()).trim();
+    }
+
     /**
      * Returns the zero-based task index from a command such as {@code mark 1}.
      *
-     * @param input the full line typed by the user
-     * @param command the command word before the task number
+     * @param arguments the text following the command word
      * @return the zero-based task index
+     * @throws InvalidDescriptionException if the task number is missing or is not a valid integer
      */
-    private static int parseTaskNumber(String input, String command) {
-        return Integer.parseInt(input.substring(command.length()).trim()) - 1;
+    private static int parseTaskIndex(String arguments, String command) throws InvalidDescriptionException {
+        try {
+            return Integer.parseInt(arguments) - 1;
+        } catch (NumberFormatException e) {
+            // Convert malformed user input into an error handled by both console and GUI callers.
+            throw new InvalidDescriptionException(
+                    "Oops! Please enter a task number after " + command + ", e.g. " + command + " 1.");
+        }
     }
 
     /**
      * Returns the keyword from a find command.
      *
-     * @param input the full line typed by the user
+     * @param arguments the text following the find command
      * @return the keyword to find in task descriptions
      * @throws InvalidDescriptionException if the keyword is missing
      */
-    private static String parseFindKeyword(String input) throws InvalidDescriptionException {
-        String keyword = input.substring("find".length()).trim();
-        if (keyword.isBlank()) {
+    private static String parseFindKeyword(String arguments) throws InvalidDescriptionException {
+        if (arguments.isBlank()) {
             throw new InvalidDescriptionException("Oops! You did not provide a keyword to find");
         }
-        return keyword;
+        return arguments;
     }
 
     /**
      * Creates a ToDo task from the user's input.
      *
-     * @param input the full line typed by the user
-     * @return the ToDo task described by the input
-     * @throws InvalidDescriptionException if the task name is missing
+     * @param arguments the text following the todo command
+     * @return the ToDo task described by the arguments
+     * @throws InvalidDescriptionException if the task description is missing
      */
-    private static Task parseToDo(String input) throws InvalidDescriptionException {
-        String description = input.substring("todo".length()).trim();
-        if (description.isBlank()) {
+    private static Task parseToDo(String arguments) throws InvalidDescriptionException {
+        if (arguments.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty todo description");
         }
-        return new ToDo(false, description);
+        return new ToDo(false, arguments);
     }
 
     /**
      * Creates a deadline task from the user's input.
      *
-     * @param input the full line typed by the user
-     * @return the deadline task described by the input
+     * @param arguments the text following the deadline command
+     * @return the deadline task described by the arguments
      * @throws InvalidDescriptionException if the deadline description or date is missing
      * @throws DateTimeException if the date does not match the required format
      */
-    private static Task parseDeadline(String input) throws InvalidDescriptionException, DateTimeException {
-        int byIndex = input.indexOf("/by");
-        if (byIndex == -1 || input.substring(byIndex + "/by".length()).trim().isEmpty()) {
+    private static Task parseDeadline(String arguments) throws InvalidDescriptionException, DateTimeException {
+        int byIndex = arguments.indexOf(DEADLINE_DATE_MARKER);
+        if (byIndex == -1
+                || arguments.substring(byIndex + DEADLINE_DATE_MARKER.length()).trim().isEmpty()) {
             throw new InvalidDescriptionException("Oops! You did not provide a date for the deadline");
         }
 
-        String description = input.substring("deadline".length(), byIndex).trim();
+        String description = arguments.substring(0, byIndex).trim();
         if (description.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty deadline description");
         }
 
-        String deadlineDate = input.substring(byIndex + "/by".length()).trim();
+        String deadlineDate = arguments.substring(byIndex + DEADLINE_DATE_MARKER.length()).trim();
         return new Deadline(false, description, parseDate(deadlineDate));
     }
 
     /**
      * Creates an event task from the user's input.
      *
-     * @param input the full line typed by the user
-     * @return the event task described by the input
+     * @param arguments the text following the event command
+     * @return the event task described by the arguments
      * @throws InvalidDescriptionException if the event description, start date, or end date is missing
      */
-    private static Task parseEvent(String input) throws InvalidDescriptionException {
-        int fromIndex = input.indexOf("/from");
-        int toIndex = input.indexOf("/to");
-        if (toIndex == -1 || input.substring(toIndex + "/to".length()).trim().isEmpty()) {
+    private static Task parseEvent(String arguments) throws InvalidDescriptionException {
+        int fromIndex = arguments.indexOf(EVENT_START_MARKER);
+        int toIndex = arguments.indexOf(EVENT_END_MARKER);
+        boolean hasEndMarker = toIndex != -1;
+        String to = hasEndMarker ? arguments.substring(toIndex + EVENT_END_MARKER.length()).trim() : "";
+        if (to.isEmpty()) {
             throw new InvalidDescriptionException("Oops! You did not provide an end date for the event");
         }
-        if (fromIndex == -1 || fromIndex > toIndex
-                || input.substring(fromIndex + "/from".length(), toIndex).trim().isEmpty()) {
+
+        boolean hasOrderedDateMarkers = fromIndex != -1 && fromIndex < toIndex;
+        String from = hasOrderedDateMarkers
+                ? arguments.substring(fromIndex + EVENT_START_MARKER.length(), toIndex).trim()
+                : "";
+        if (from.isEmpty()) {
             throw new InvalidDescriptionException("Oops! You did not provide a start date for the event");
         }
 
-        String description = input.substring("event".length(), fromIndex).trim();
+        String description = arguments.substring(0, fromIndex).trim();
         if (description.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty event description");
         }
 
-        String from = input.substring(fromIndex + "/from".length(), toIndex).trim();
-        String to = input.substring(toIndex + "/to".length()).trim();
         return new Event(false, description, parseDate(from), parseDate(to));
     }
 }
