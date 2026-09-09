@@ -990,6 +990,7 @@ Inputs:
 ```text
 stats since
 stats week
+stats since 9999-12-31
 bye
 ```
 
@@ -1009,6 +1010,9 @@ Oops! Use stats, stats all, or stats since yyyy-MM-dd.
 ____________________________________________________________
 ____________________________________________________________
 Oops! Use stats, stats all, or stats since yyyy-MM-dd.
+____________________________________________________________
+____________________________________________________________
+UhOh! You entered a date that is in the future. Please enter today or an earlier date.
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^

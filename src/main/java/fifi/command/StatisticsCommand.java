@@ -9,6 +9,7 @@ import fifi.Storage;
 import fifi.TaskList;
 import fifi.TaskStatistics;
 import fifi.Ui;
+import fifi.exception.InvalidDescriptionException;
 
 /**
  * Shows a status breakdown for all tasks or tasks created since a given date.
@@ -41,8 +42,12 @@ public class StatisticsCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public void execute(TaskList tasks, Ui ui, Storage storage) throws InvalidDescriptionException {
         LocalDateTime now = LocalDateTime.now(clock);
+        if (startDate != null && startDate.isAfter(now.toLocalDate())) {
+            throw new InvalidDescriptionException(
+                    "UhOh! You entered a date that is in the future. Please enter today or an earlier date.");
+        }
         TaskStatistics statistics;
         String heading;
         if (startDate == null) {

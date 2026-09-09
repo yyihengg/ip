@@ -298,6 +298,19 @@ public class CommandTest {
     }
 
     @Test
+    public void execute_statisticsSinceFutureDate_exceptionThrown() {
+        LocalDateTime now = LocalDateTime.of(2026, 9, 9, 15, 0);
+        Clock clock = Clock.fixed(now.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
+        StatisticsCommand command = new StatisticsCommand(LocalDate.of(2026, 9, 10), clock);
+
+        InvalidDescriptionException exception = assertThrows(InvalidDescriptionException.class, () ->
+                command.execute(new TaskList(), new Ui(), getUnusedStorage()));
+
+        assertEquals("UhOh! You entered a date that is in the future. "
+                + "Please enter today or an earlier date.", exception.getMessage());
+    }
+
+    @Test
     public void execute_exitCommand_messagePrintedAndExitTrue() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ExitCommand();
