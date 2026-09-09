@@ -27,12 +27,9 @@ public abstract class AddTaskCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) throws FifiException, IOException {
         tasks.add(task);
         storage.saveTasks(tasks);
-        ui.showResponse(String.format(
-                "Got it. I've added this task:%n"
-                        + "%s%n"
-                        + "Now you have %d tasks in the list.",
-                task,
-                tasks.size()
-        ));
+        ui.showResponse(
+                "Got it. I've added this task:",
+                task.toString(),
+                String.format("Now you have %d tasks in the list.", tasks.size()));
     }
 }

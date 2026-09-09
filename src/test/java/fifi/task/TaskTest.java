@@ -66,7 +66,7 @@ public class TaskTest {
 
         @Override
         public String toFileString() {
-            return String.format("%s | %s", getMarkedStatus(), getName());
+            return String.format("%s | %s", getMarkedStatus(), getDescription());
         }
     }
 }

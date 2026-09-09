@@ -7,19 +7,19 @@ import java.time.LocalDate;
  */
 public abstract class Task {
     private boolean marked;
-    private final String name;
+    private final String description;
 
-    protected Task(boolean marked, String name) {
+    protected Task(boolean marked, String description) {
         this.marked = marked;
-        this.name = name;
+        this.description = description;
     }
 
     public boolean isMarked() {
         return this.marked;
     }
 
-    public String getName() {
-        return this.name;
+    public String getDescription() {
+        return this.description;
     }
 
     /**
@@ -65,8 +65,8 @@ public abstract class Task {
     @Override
     public String toString() {
         if (this.isMarked()) {
-            return String.format("[X] %s", getName());
+            return String.format("[X] %s", getDescription());
         }
-        return String.format("[ ] %s", getName());
+        return String.format("[ ] %s", getDescription());
     }
 }

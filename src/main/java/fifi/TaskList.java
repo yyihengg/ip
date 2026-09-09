@@ -54,6 +54,8 @@ public class TaskList {
                     """);
         }
         tasks.add(task);
+        // The capacity check above must keep every successful addition within the limit.
+        assert tasks.size() <= MAX_TASKS : "Adding a task must not exceed the task limit";
     }
 
     /**
@@ -73,7 +75,11 @@ public class TaskList {
      * @return the deleted task
      */
     public Task delete(int taskIndex) {
-        return tasks.remove(taskIndex);
+        int previousSize = tasks.size();
+        Task removedTask = tasks.remove(taskIndex);
+        // Deletion must remove exactly one entry so subsequent task numbers stay consistent.
+        assert tasks.size() == previousSize - 1 : "Deleting a task must reduce the task count by one";
+        return removedTask;
     }
 
     /**
@@ -90,6 +96,22 @@ public class TaskList {
             }
         }
         return new TaskList(occurringTasks);
+    }
+
+    /**
+     * Returns a task list containing tasks with descriptions that contain the keyword.
+     *
+     * @param keyword the keyword to search for
+     * @return a task list containing matching tasks
+     */
+    public TaskList findTasksByKeyword(String keyword) {
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getDescription().contains(keyword)) {
+                matchingTasks.add(task);
+            }
+        }
+        return new TaskList(matchingTasks);
     }
 
     /**

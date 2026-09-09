@@ -26,7 +26,9 @@ public class MarkCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
         Task currentTask = tasks.get(taskIndex);
         currentTask.mark();
+        // Every task implementation must honor mark() before its state is saved or reported.
+        assert currentTask.isMarked() : "A task must be marked after mark()";
         storage.saveTasks(tasks);
-        ui.showResponse(String.format("Nice! I've marked this task as done:\n%s", currentTask));
+        ui.showResponse("Nice! I've marked this task as done:", currentTask.toString());
     }
 }

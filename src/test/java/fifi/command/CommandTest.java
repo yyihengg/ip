@@ -93,7 +93,7 @@ public class CommandTest {
 
         assertEquals(1, tasks.size());
         Event event = (Event) tasks.get(0);
-        assertEquals("team meeting", event.getName());
+        assertEquals("team meeting", event.getDescription());
         assertEquals(LocalDate.of(2025, 10, 1), event.getStart());
         assertEquals(LocalDate.of(2025, 10, 3), event.getEnd());
         assertFalse(event.isMarked());
@@ -101,7 +101,8 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_taskNamesContainingCommandWords_fullNamesSavedAfterInvalidInputs() throws Exception {
+    public void execute_taskDescriptionsContainingCommandWords_fullDescriptionsSavedAfterInvalidInputs()
+            throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList();
         Ui ui = new Ui();
@@ -146,6 +147,30 @@ public class CommandTest {
     }
 
     @Test
+    public void execute_brokenMarkTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo(false, "read book") {
+            @Override
+            public void mark() {
+                // Simulates a task implementation that violates the completion contract.
+            }
+        });
+        storage.saveTasks(tasks);
+
+        assertThrows(AssertionError.class, () -> new MarkCommand(0).execute(tasks, new Ui(), storage));
+        assertEquals("T | 0 | read book", Files.readString(dataFile));
+        assertEquals("", output.toString(StandardCharsets.UTF_8));
+
+        tasks.add(new ToDo(false, "working task"));
+        new MarkCommand(1).execute(tasks, new Ui(), storage);
+        assertTrue(tasks.get(1).isMarked());
+        assertTrue(Files.readString(dataFile).contains("T | 1 | working task"));
+    }
+
+    @Test
     public void execute_unmarkCommand_existingTask_taskUnmarkedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         ArrayList<Task> sampleTasks = getSampleTasks();
@@ -157,6 +182,30 @@ public class CommandTest {
         assertFalse(tasks.get(0).isMarked());
         assertFalse(tasks.get(1).isMarked());
         assertEquals("T | 0 | read book", firstSavedLine(dataFile));
+    }
+
+    @Test
+    public void execute_brokenUnmarkTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+        TaskList tasks = new TaskList();
+        tasks.add(new ToDo(true, "read book") {
+            @Override
+            public void unmark() {
+                // Simulates a task implementation that violates the completion contract.
+            }
+        });
+        storage.saveTasks(tasks);
+
+        assertThrows(AssertionError.class, () -> new UnmarkCommand(0).execute(tasks, new Ui(), storage));
+        assertEquals("T | 1 | read book", Files.readString(dataFile));
+        assertEquals("", output.toString(StandardCharsets.UTF_8));
+
+        tasks.add(new ToDo(true, "working task"));
+        new UnmarkCommand(1).execute(tasks, new Ui(), storage);
+        assertFalse(tasks.get(1).isMarked());
+        assertTrue(Files.readString(dataFile).contains("T | 0 | working task"));
     }
 
     @Test
@@ -182,6 +231,18 @@ public class CommandTest {
 
         assertOutputContains(output, "Here are the tasks occurring on your specified date:\n"
                 + "1. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)");
+    }
+
+    @Test
+    public void execute_findCommand_matchingKeyword_matchingTasksPrinted() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Command command = new FindCommand("book");
+
+        command.execute(new TaskList(getSampleTasks()), new Ui(), getUnusedStorage());
+
+        assertOutputContains(output, "Here are the matching tasks in your list:\n"
+                + "1. [T][ ] read book\n"
+                + "2. [D][ ] return book (by: Dec 02 2019)");
     }
 
     @Test

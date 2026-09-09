@@ -5,18 +5,18 @@ package fifi.task;
  */
 public class ToDo extends Task {
     /**
-     * Creates a todo task with its completion status and name.
+     * Creates a todo task with its completion status and description.
      *
      * @param marked whether the todo has been completed
-     * @param name name of the todo
+     * @param description description of the todo
      */
-    public ToDo(boolean marked, String name) {
-        super(marked, name);
+    public ToDo(boolean marked, String description) {
+        super(marked, description);
     }
 
     @Override
     public String toFileString() {
-        return String.format("T | %s | %s", getMarkedStatus(), getName());
+        return String.format("T | %s | %s", getMarkedStatus(), getDescription());
     }
 
     @Override
@@ -24,4 +24,3 @@ public class ToDo extends Task {
         return String.format("[T]" + super.toString());
     }
 }
-

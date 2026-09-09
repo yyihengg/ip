@@ -57,12 +57,12 @@ public class StorageTest {
         Deadline deadline = (Deadline) loadedTasks.get(1);
         Event event = (Event) loadedTasks.get(2);
         assertTrue(todo.isMarked());
-        assertEquals("read book", todo.getName());
+        assertEquals("read book", todo.getDescription());
         assertFalse(deadline.isMarked());
-        assertEquals("return book", deadline.getName());
+        assertEquals("return book", deadline.getDescription());
         assertEquals(LocalDate.of(2019, 12, 2), deadline.getDueDate());
         assertFalse(event.isMarked());
-        assertEquals("project meeting", event.getName());
+        assertEquals("project meeting", event.getDescription());
         assertEquals(LocalDate.of(2019, 12, 2), event.getStart());
         assertEquals(LocalDate.of(2019, 12, 4), event.getEnd());
 

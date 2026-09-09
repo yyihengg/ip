@@ -64,6 +64,23 @@ public class UiTest {
                 output.toString(StandardCharsets.UTF_8));
     }
 
+    @Test
+    public void showResponse_multipleMessages_messagesPrintedOnSeparateLines() {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Ui ui = new Ui();
+
+        ui.showResponse("First line", "Second line", "Third line");
+
+        assertEquals("""
+                ____________________________________________________________
+                First line
+                Second line
+                Third line
+                ____________________________________________________________
+                """.replace("\n", System.lineSeparator()),
+                output.toString(StandardCharsets.UTF_8));
+    }
+
     private ByteArrayOutputStream replaceSystemOut() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));

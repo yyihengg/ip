@@ -12,15 +12,15 @@ public class Event extends Task {
     private final LocalDate end;
 
     /**
-     * Creates an event task with its completion status, name, and date range.
+     * Creates an event task with its completion status, description, start date, and end date.
      *
      * @param marked whether the event has been completed
-     * @param name name of the event
+     * @param description description of the event
      * @param start date when the event starts
      * @param end date when the event ends
      */
-    public Event(boolean marked, String name, LocalDate start, LocalDate end) {
-        super(marked, name);
+    public Event(boolean marked, String description, LocalDate start, LocalDate end) {
+        super(marked, description);
         this.start = start;
         this.end = end;
     }
@@ -45,7 +45,7 @@ public class Event extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getName(),
+        return String.format("E | %s | %s | %s | %s", getMarkedStatus(), getDescription(),
                 Parser.formatDateForStorage(getStart()), Parser.formatDateForStorage(getEnd()));
     }
 

@@ -54,6 +54,14 @@ public class TaskListTest {
 
         assertThrows(ExcessiveTaskException.class, () -> tasks.add(new ToDo(false, "overflow task")));
         assertEquals(100, tasks.size());
+
+        tasks.delete(99);
+        ToDo replacement = new ToDo(false, "replacement task");
+        tasks.add(replacement);
+        assertEquals(100, tasks.size());
+        assertEquals(replacement, tasks.get(99));
+        assertThrows(ExcessiveTaskException.class, () -> tasks.add(new ToDo(false, "another overflow")));
+        assertEquals(replacement, tasks.get(99));
     }
 
     @Test
@@ -66,6 +74,25 @@ public class TaskListTest {
         assertEquals(2, tasks.size());
         assertEquals("[T][ ] read book", tasks.get(0).toString());
         assertEquals("[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)", tasks.get(1).toString());
+    }
+
+    @Test
+    public void delete_invalidIndicesThenLastTask_statePreservedAndListReusable() throws Exception {
+        TaskList tasks = new TaskList();
+        ToDo todo = new ToDo(false, "read book");
+        tasks.add(todo);
+
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.delete(-1));
+        assertEquals(1, tasks.size());
+        assertEquals(todo, tasks.get(0));
+        assertEquals(todo, tasks.delete(0));
+        assertEquals(0, tasks.size());
+        assertThrows(IndexOutOfBoundsException.class, () -> tasks.delete(0));
+        assertEquals(0, tasks.size());
+
+        tasks.add(todo);
+        assertEquals(1, tasks.size());
+        assertEquals(todo, tasks.get(0));
     }
 
     @Test
@@ -98,6 +125,29 @@ public class TaskListTest {
         TaskList tasks = new TaskList(getSampleTasks());
 
         TaskList matchingTasks = tasks.getTasksOccurringOn(LocalDate.of(2019, 12, 5));
+
+        assertEquals(0, matchingTasks.size());
+        assertEquals("", matchingTasks.toDisplayString());
+    }
+
+    @Test
+    public void findTasksByKeyword_matchingDescriptions_matchingTasksReturned() {
+        TaskList tasks = new TaskList(getSampleTasks());
+
+        TaskList matchingTasks = tasks.findTasksByKeyword("book");
+
+        assertEquals("""
+
+                1. [T][ ] read book
+                2. [D][ ] return book (by: Dec 02 2019)""",
+                matchingTasks.toDisplayString());
+    }
+
+    @Test
+    public void findTasksByKeyword_noMatchingDescriptions_emptyTaskListReturned() {
+        TaskList tasks = new TaskList(getSampleTasks());
+
+        TaskList matchingTasks = tasks.findTasksByKeyword("lecture");
 
         assertEquals(0, matchingTasks.size());
         assertEquals("", matchingTasks.toDisplayString());

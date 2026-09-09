@@ -11,14 +11,14 @@ public class Deadline extends Task {
     private final LocalDate dueDate;
 
     /**
-     * Creates a deadline task with its completion status, name, and due date.
+     * Creates a deadline task with its completion status, description, and due date.
      *
      * @param marked whether the deadline has been completed
-     * @param name name of the deadline
+     * @param description description of the deadline
      * @param dueDate date when the deadline is due
      */
-    public Deadline(boolean marked, String name, LocalDate dueDate) {
-        super(marked, name);
+    public Deadline(boolean marked, String description, LocalDate dueDate) {
+        super(marked, description);
         this.dueDate = dueDate;
     }
 
@@ -38,7 +38,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toFileString() {
-        return String.format("D | %s | %s | %s", getMarkedStatus(), getName(),
+        return String.format("D | %s | %s | %s", getMarkedStatus(), getDescription(),
                 Parser.formatDateForStorage(getDueDate()));
     }
 

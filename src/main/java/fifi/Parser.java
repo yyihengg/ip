@@ -12,6 +12,7 @@ import fifi.command.AddTodoCommand;
 import fifi.command.Command;
 import fifi.command.DeleteCommand;
 import fifi.command.ExitCommand;
+import fifi.command.FindCommand;
 import fifi.command.ListCommand;
 import fifi.command.MarkCommand;
 import fifi.command.ShowCommand;
@@ -42,7 +43,7 @@ public class Parser {
      * @param input the full line typed by the user
      * @return the command represented by the input
      * @throws InvalidCommandException if the command word is not recognized
-     * @throws InvalidDescriptionException if a command description is missing
+     * @throws InvalidDescriptionException if a command description is missing or a task number is not an integer
      */
     public static Command parse(String input) throws InvalidCommandException, InvalidDescriptionException {
         String command = parseCommand(input);
@@ -50,16 +51,17 @@ public class Parser {
         return switch (command) {
             case "bye" -> new ExitCommand();
             case "list" -> new ListCommand();
-            case "mark" -> new MarkCommand(parseTaskIndex(arguments));
-            case "unmark" -> new UnmarkCommand(parseTaskIndex(arguments));
+            case "mark" -> new MarkCommand(parseTaskIndex(arguments, command));
+            case "unmark" -> new UnmarkCommand(parseTaskIndex(arguments, command));
             case "todo" -> new AddTodoCommand(parseToDo(arguments));
             case "deadline" -> new AddDeadlineCommand(parseDeadline(arguments));
             case "event" -> new AddEventCommand(parseEvent(arguments));
-            case "delete" -> new DeleteCommand(parseTaskIndex(arguments));
+            case "delete" -> new DeleteCommand(parseTaskIndex(arguments, command));
             case "show" -> new ShowCommand(parseDateArgument(arguments));
+            case "find" -> new FindCommand(parseFindKeyword(arguments));
             default -> throw new InvalidCommandException("""
                         UhOh, this command is invalid, please enter a valid one!
-                        Valid commands include "list, todo, event, deadline, mark, unmark, delete, show"\
+                        Valid commands include "list, todo, event, deadline, mark, unmark, delete, show, find"\
                         """);
         };
     }
@@ -125,6 +127,8 @@ public class Parser {
     }
 
     private static String parseArguments(String input, String command) {
+        // The dispatcher must supply the matching command before this helper removes it.
+        assert parseCommand(input).equals(command) : "Argument parsing must use the dispatched command";
         return input.substring(command.length()).trim();
     }
 
@@ -133,9 +137,30 @@ public class Parser {
      *
      * @param arguments the text following the command word
      * @return the zero-based task index
+     * @throws InvalidDescriptionException if the task number is missing or is not a valid integer
      */
-    private static int parseTaskIndex(String arguments) {
-        return Integer.parseInt(arguments) - 1;
+    private static int parseTaskIndex(String arguments, String command) throws InvalidDescriptionException {
+        try {
+            return Integer.parseInt(arguments) - 1;
+        } catch (NumberFormatException e) {
+            // Convert malformed user input into an error handled by both console and GUI callers.
+            throw new InvalidDescriptionException(
+                    "Oops! Please enter a task number after " + command + ", e.g. " + command + " 1.");
+        }
+    }
+
+    /**
+     * Returns the keyword from a find command.
+     *
+     * @param arguments the text following the find command
+     * @return the keyword to find in task descriptions
+     * @throws InvalidDescriptionException if the keyword is missing
+     */
+    private static String parseFindKeyword(String arguments) throws InvalidDescriptionException {
+        if (arguments.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You did not provide a keyword to find");
+        }
+        return arguments;
     }
 
     /**
@@ -143,11 +168,11 @@ public class Parser {
      *
      * @param arguments the text following the todo command
      * @return the ToDo task described by the arguments
-     * @throws InvalidDescriptionException if the task name is missing
+     * @throws InvalidDescriptionException if the task description is missing
      */
     private static Task parseToDo(String arguments) throws InvalidDescriptionException {
         if (arguments.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty todo name");
+            throw new InvalidDescriptionException("Oops! You cannot have an empty todo description");
         }
         return new ToDo(false, arguments);
     }
@@ -157,7 +182,7 @@ public class Parser {
      *
      * @param arguments the text following the deadline command
      * @return the deadline task described by the arguments
-     * @throws InvalidDescriptionException if the deadline name or date is missing
+     * @throws InvalidDescriptionException if the deadline description or date is missing
      * @throws DateTimeException if the date does not match the required format
      */
     private static Task parseDeadline(String arguments) throws InvalidDescriptionException, DateTimeException {
@@ -167,13 +192,13 @@ public class Parser {
             throw new InvalidDescriptionException("Oops! You did not provide a date for the deadline");
         }
 
-        String name = arguments.substring(0, byIndex).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty deadline name");
+        String description = arguments.substring(0, byIndex).trim();
+        if (description.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You cannot have an empty deadline description");
         }
 
         String deadlineDate = arguments.substring(byIndex + DEADLINE_DATE_MARKER.length()).trim();
-        return new Deadline(false, name, parseDate(deadlineDate));
+        return new Deadline(false, description, parseDate(deadlineDate));
     }
 
     /**
@@ -181,7 +206,7 @@ public class Parser {
      *
      * @param arguments the text following the event command
      * @return the event task described by the arguments
-     * @throws InvalidDescriptionException if the event name, start date, or end date is missing
+     * @throws InvalidDescriptionException if the event description, start date, or end date is missing
      */
     private static Task parseEvent(String arguments) throws InvalidDescriptionException {
         int fromIndex = arguments.indexOf(EVENT_START_MARKER);
@@ -200,11 +225,11 @@ public class Parser {
             throw new InvalidDescriptionException("Oops! You did not provide a start date for the event");
         }
 
-        String name = arguments.substring(0, fromIndex).trim();
-        if (name.isBlank()) {
-            throw new InvalidDescriptionException("Oops! You cannot have an empty event name");
+        String description = arguments.substring(0, fromIndex).trim();
+        if (description.isBlank()) {
+            throw new InvalidDescriptionException("Oops! You cannot have an empty event description");
         }
 
-        return new Event(false, name, parseDate(from), parseDate(to));
+        return new Event(false, description, parseDate(from), parseDate(to));
     }
 }

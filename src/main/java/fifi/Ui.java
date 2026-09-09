@@ -49,11 +49,12 @@ public class Ui {
     }
 
     /**
-     * Shows one chatbot response surrounded by separator lines.
+     * Shows one or more chatbot response messages on separate lines.
      *
-     * @param message the message to show between separator lines
+     * @param messages the messages to show between separator lines
      */
-    public void showResponse(String message) {
-        System.out.printf(RESPONSE_FORMAT, message);
+    public void showResponse(String... messages) {
+        String response = String.join(System.lineSeparator(), messages);
+        System.out.printf(RESPONSE_FORMAT, response);
     }
 }
