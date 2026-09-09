@@ -32,6 +32,20 @@ public class TaskListTest {
     }
 
     @Test
+    public void constructor_mutableSourceListChanged_taskListUnaffected() {
+        ArrayList<Task> sourceTasks = getSampleTasks();
+        TaskList tasks = new TaskList(sourceTasks);
+
+        sourceTasks.clear();
+        sourceTasks.add(new ToDo(false, "unexpected task"));
+
+        assertEquals(3, tasks.size());
+        assertEquals("[T][ ] read book", tasks.get(0).toString());
+        assertEquals("[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)",
+                tasks.get(2).toString());
+    }
+
+    @Test
     public void add_fullList_exceptionThrown() throws Exception {
         TaskList tasks = new TaskList();
         for (int i = 0; i < 100; i++) {
@@ -92,6 +106,7 @@ public class TaskListTest {
                 1. [D][ ] return book (by: Dec 02 2019)
                 2. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)""",
                 matchingTasks.toDisplayString());
+        assertEquals(3, tasks.size());
     }
 
     @Test
@@ -127,6 +142,7 @@ public class TaskListTest {
                 1. [T][ ] read book
                 2. [D][ ] return book (by: Dec 02 2019)""",
                 matchingTasks.toDisplayString());
+        assertEquals(3, tasks.size());
     }
 
     @Test

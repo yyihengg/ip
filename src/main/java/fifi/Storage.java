@@ -16,6 +16,18 @@ import fifi.task.ToDo;
  * Handles loading and saving chatbot tasks on the hard disk.
  */
 public class Storage {
+    private static final String FIELD_SEPARATOR_REGEX = " \\| ";
+    private static final String MARKED_STATUS = "1";
+    private static final String TODO_TASK_CODE = "T";
+    private static final String DEADLINE_TASK_CODE = "D";
+    private static final String EVENT_TASK_CODE = "E";
+
+    private static final int TASK_TYPE_INDEX = 0;
+    private static final int STATUS_INDEX = 1;
+    private static final int NAME_INDEX = 2;
+    private static final int DATE_INDEX = 3;
+    private static final int END_DATE_INDEX = 4;
+
     private final Path filePath;
 
     /**
@@ -33,8 +45,8 @@ public class Storage {
      * @return the tasks saved in the data file, or an empty list if the file does not exist
      * @throws IOException if the file cannot be read
      */
-    public ArrayList<Task> loadTasks() throws IOException {
-        ArrayList<Task> tasks = new ArrayList<>();
+    public List<Task> loadTasks() throws IOException {
+        List<Task> tasks = new ArrayList<>();
         if (!Files.exists(filePath)) {
             return tasks;
         }
@@ -72,15 +84,17 @@ public class Storage {
      * @param savedTask one line from the save file
      * @return the task represented by that line
      */
-    private Task parseTask(String savedTask) {
-        String[] parts = savedTask.split(" \\| ");
-        boolean isMarked = parts[1].equals("1");
+    private Task parseTask(String savedTask) throws IOException {
+        String[] parts = savedTask.split(FIELD_SEPARATOR_REGEX);
+        boolean isMarked = parts[STATUS_INDEX].equals(MARKED_STATUS);
 
-        return switch (parts[0]) {
-            case "D" -> new Deadline(isMarked, parts[2], Parser.parseDate(parts[3]));
-            case "E" -> new Event(isMarked, parts[2], Parser.parseDate(parts[3]),
-                    Parser.parseDate(parts[4]));
-            default -> new ToDo(isMarked, parts[2]);
+        return switch (parts[TASK_TYPE_INDEX]) {
+            case TODO_TASK_CODE -> new ToDo(isMarked, parts[NAME_INDEX]);
+            case DEADLINE_TASK_CODE -> new Deadline(isMarked, parts[NAME_INDEX],
+                    Parser.parseDate(parts[DATE_INDEX]));
+            case EVENT_TASK_CODE -> new Event(isMarked, parts[NAME_INDEX],
+                    Parser.parseDate(parts[DATE_INDEX]), Parser.parseDate(parts[END_DATE_INDEX]));
+            default -> throw new IOException("Unsupported task type: " + parts[TASK_TYPE_INDEX]);
         };
     }
 }
