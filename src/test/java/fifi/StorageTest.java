@@ -131,8 +131,8 @@ public class StorageTest {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         Files.writeString(dataFile, "T | 0 | read book | yesterday | -");
 
-        IOException exception = assertThrows(IOException.class,
-                () -> new Storage(dataFile.toString()).loadTasks());
+        IOException exception = assertThrows(IOException.class, () ->
+                new Storage(dataFile.toString()).loadTasks());
 
         assertEquals("Invalid saved task: T | 0 | read book | yesterday | -", exception.getMessage());
     }

@@ -130,7 +130,7 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_listCommand_existingTasks_taskListPrinted() throws Exception {
+    public void execute_listCommand_tasksPrinted() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ListCommand();
 
@@ -143,7 +143,7 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_markCommand_existingTask_taskMarkedAndSaved() throws Exception {
+    public void execute_markCommand_taskMarkedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList(getSampleTasks());
 
@@ -179,7 +179,7 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_unmarkCommand_existingTask_taskUnmarkedAndSaved() throws Exception {
+    public void execute_unmarkCommand_taskUnmarkedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         ArrayList<Task> markedTasks = new ArrayList<>();
         markedTasks.add(new ToDo(true, "read book", LocalDateTime.of(2019, 11, 29, 8, 0),
@@ -221,7 +221,7 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_deleteCommand_existingTask_taskDeletedAndSaved() throws Exception {
+    public void execute_deleteCommand_taskDeletedAndSaved() throws Exception {
         Path dataFile = temporaryDirectory.resolve("duke.txt");
         TaskList tasks = new TaskList(getSampleTasks());
 
@@ -235,7 +235,7 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_showCommand_matchingDate_matchingTasksPrinted() throws Exception {
+    public void execute_showCommand_matchingTasksPrinted() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ShowCommand(LocalDate.of(2019, 12, 3));
 
@@ -246,7 +246,7 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_findCommand_matchingKeyword_matchingTasksPrinted() throws Exception {
+    public void execute_findCommand_matchingTasksPrinted() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new FindCommand("book");
 
@@ -298,7 +298,7 @@ public class CommandTest {
     }
 
     @Test
-    public void execute_exitCommand_noInput_exitMessagePrintedAndExitTrue() throws Exception {
+    public void execute_exitCommand_messagePrintedAndExitTrue() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
         Command command = new ExitCommand();
 
