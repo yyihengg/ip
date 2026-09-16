@@ -1,6 +1,7 @@
 package fifi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -109,6 +110,61 @@ public class FifiTest {
         }
         assertEquals("BaiBai! Hope to see you soon ^^", fifi.getResponse("bye"));
         assertTrue(fifi.isExit());
+    }
+
+    @Test
+    public void getChatResponse_invalidThenValidCommands_statusAndTaskStateRemainIndependent() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Fifi fifi = new Fifi(dataFile.toString());
+        ChatResponse addedTask = fifi.getChatResponse("todo Oops! read book");
+        assertFalse(addedTask.isError());
+        String savedTasks = Files.readString(dataFile);
+
+        String[] invalidCommands = {"blah", "todo", "show 2025-02-30", "mark 0", "unmark -1", "delete 99",
+            "mark -2147483648", "stats since"};
+        for (String invalidCommand : invalidCommands) {
+            ChatResponse error = fifi.getChatResponse(invalidCommand);
+            assertTrue(error.isError(), invalidCommand);
+            assertFalse(error.getMessage().isBlank());
+            assertFalse(fifi.isExit());
+            assertEquals(savedTasks, Files.readString(dataFile));
+
+            ChatResponse success = fifi.getChatResponse("list");
+            assertFalse(success.isError());
+            assertTrue(success.getMessage().contains("1. [T][ ] Oops! read book"));
+            assertTrue(error.isError());
+            assertFalse(addedTask.isError());
+        }
+
+        ChatResponse exit = fifi.getChatResponse("bye");
+        assertFalse(exit.isError());
+        assertTrue(fifi.isExit());
+    }
+
+    @Test
+    public void getChatResponse_emptyTaskList_invalidTaskNumbersDoNotPreventAddingTasks() {
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        ChatResponse error = fifi.getChatResponse("delete 1");
+        assertTrue(error.isError());
+        assertEquals("Oops! Your task list is empty. Add a task first.", error.getMessage());
+
+        ChatResponse success = fifi.getChatResponse("todo read book");
+        assertFalse(success.isError());
+        assertTrue(success.getMessage().contains("Now you have 1 tasks in the list."));
+    }
+
+    @Test
+    public void getChatResponse_saveFailure_errorReturnedAndReadCommandsStillWork() throws Exception {
+        Path blockedDirectory = temporaryDirectory.resolve("blocked");
+        Files.writeString(blockedDirectory, "This file prevents creating a directory.");
+        Fifi fifi = new Fifi(blockedDirectory.resolve("duke.txt").toString());
+
+        ChatResponse error = fifi.getChatResponse("todo read book");
+
+        assertTrue(error.isError());
+        assertEquals("Oops! I could not save your tasks to the hard disk.", error.getMessage());
+        assertFalse(fifi.getChatResponse("list").isError());
+        assertEquals("This file prevents creating a directory.", Files.readString(blockedDirectory));
     }
 
     private String normalizeLineEndings(String text) {

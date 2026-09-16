@@ -57,4 +57,13 @@ public class Ui {
         String response = String.join(System.lineSeparator(), messages);
         System.out.printf(RESPONSE_FORMAT, response);
     }
+
+    /**
+     * Shows an error reported while handling a command.
+     *
+     * @param message explanation of the error
+     */
+    public void showError(String message) {
+        showResponse(message);
+    }
 }

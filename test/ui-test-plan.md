@@ -2,6 +2,69 @@
 
 Record console UI test cases here. Each case must include an aim, inputs, and exact expected output.
 
+## Recovers From Invalid Task Numbers
+
+Aim: Check that invalid task numbers show guidance, preserve tasks, and allow subsequent valid commands.
+
+Inputs:
+```text
+delete 1
+todo read book
+mark 0
+list
+unmark -1
+mark 1
+delete 99
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Oops! Your task list is empty. Add a task first.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] read book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number between 1 and 1.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number between 1 and 1.
+____________________________________________________________
+____________________________________________________________
+Nice! I've marked this task as done:
+[T][X] read book
+____________________________________________________________
+____________________________________________________________
+Oops! Please enter a task number between 1 and 1.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][X] read book
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
 ## Rejects Unsupported Saved Task Type
 
 Aim: Check that an unsupported saved task type is not silently loaded as a todo and that the chatbot still starts.
