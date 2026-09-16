@@ -20,6 +20,7 @@ public class Deadline extends Task {
      */
     public Deadline(boolean marked, String description, LocalDate dueDate) {
         super(marked, description);
+        validateDate(dueDate);
         this.dueDate = dueDate;
     }
 
@@ -35,6 +36,7 @@ public class Deadline extends Task {
     public Deadline(boolean marked, String description, LocalDate dueDate,
             LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
         super(marked, description, createdAt, lastMarkedAt);
+        validateDate(dueDate);
         this.dueDate = dueDate;
     }
 

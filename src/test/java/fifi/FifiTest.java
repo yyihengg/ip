@@ -169,8 +169,8 @@ public class FifiTest {
     @Test
     public void getChatResponse_saveFailure_errorReturnedAndReadCommandsStillWork() throws Exception {
         Path blockedDirectory = temporaryDirectory.resolve("blocked");
-        Files.writeString(blockedDirectory, "This file prevents creating a directory.");
         Fifi fifi = new Fifi(blockedDirectory.resolve("duke.txt").toString());
+        Files.writeString(blockedDirectory, "This file prevents creating a directory.");
 
         ChatResponse error = fifi.getChatResponse("todo read book");
 
@@ -195,6 +195,46 @@ public class FifiTest {
         assertTrue(fifi.getResponse("list").contains("1. [T][X] read book"));
         assertFalse(fifi.getChatResponse("delete 1").isError());
         assertFalse(fifi.getChatResponse("todo read book").isError());
+    }
+
+    @Test
+    public void startup_corruptedData_reportedAndAllChangesBlockedUntilRestart() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        String corruptedData = "T | 0 | valid task\nT";
+        Files.writeString(dataFile, corruptedData);
+        Fifi fifi = new Fifi(dataFile.toString());
+        ChatResponse startupError = fifi.getStartupError().orElseThrow();
+        assertTrue(startupError.isError());
+        assertTrue(startupError.getMessage().contains("line 2"));
+        assertTrue(startupError.getMessage().contains("Your saved file has not been changed."));
+
+        String[] commands = {"todo new task", "deadline work /by 2026-09-20",
+            "event work /from 2026-09-20 /to 2026-09-20", "mark 1", "unmark 1", "delete 1"};
+        for (String command : commands) {
+            ChatResponse error = fifi.getChatResponse(command);
+            assertTrue(error.isError(), command);
+            assertTrue(error.getMessage().contains("Tasks cannot be changed"));
+            assertEquals(corruptedData, Files.readString(dataFile));
+            assertFalse(fifi.getChatResponse("list").isError());
+            assertFalse(fifi.getChatResponse("stats").isError());
+        }
+        Files.writeString(dataFile, "T | 0 | valid task");
+        assertTrue(fifi.getChatResponse("todo new task").isError());
+        Fifi restartedFifi = new Fifi(dataFile.toString());
+        assertTrue(restartedFifi.getStartupError().isEmpty());
+        assertTrue(restartedFifi.getResponse("list").contains("valid task"));
+        assertFalse(restartedFifi.getChatResponse("todo new task").isError());
+    }
+
+    @Test
+    public void startup_unreadableFile_reportedWithoutReplacingIt() throws Exception {
+        Path dataFile = Files.createDirectory(temporaryDirectory.resolve("duke.txt"));
+        Fifi fifi = new Fifi(dataFile.toString());
+
+        assertTrue(fifi.getStartupError().orElseThrow().isError());
+        assertTrue(fifi.getChatResponse("todo work").isError());
+        assertFalse(fifi.getChatResponse("list").isError());
+        assertTrue(Files.isDirectory(dataFile));
     }
 
     private String normalizeLineEndings(String text) {

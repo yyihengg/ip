@@ -30,4 +30,13 @@ public abstract class Command {
     public boolean isExit() {
         return false;
     }
+
+    /**
+     * Returns whether executing this command changes saved tasks.
+     *
+     * @return whether the command needs writable, successfully loaded storage
+     */
+    public boolean changesTasks() {
+        return false;
+    }
 }

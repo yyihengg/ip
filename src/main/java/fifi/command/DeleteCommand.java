@@ -23,6 +23,11 @@ public class DeleteCommand extends Command {
     }
 
     @Override
+    public boolean changesTasks() {
+        return true;
+    }
+
+    @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
         Task removedTask = tasks.delete(taskIndex);
         storage.saveTasks(tasks);

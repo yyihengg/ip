@@ -24,6 +24,11 @@ public abstract class AddTaskCommand extends Command {
     }
 
     @Override
+    public boolean changesTasks() {
+        return true;
+    }
+
+    @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws FifiException, IOException {
         tasks.add(task);
         storage.saveTasks(tasks);

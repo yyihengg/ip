@@ -79,6 +79,8 @@ public class Main extends Application {
         dialogContainer.heightProperty().addListener((observable, oldValue, newValue) -> scrollPane.setVvalue(1.0));
         dialogContainer.getChildren().add(DialogBox.getFifiDialog("Hello! My name is Fifi ^^\nHow may I help?",
                 fifiImage));
+        fifi.getStartupError().ifPresent(error ->
+                dialogContainer.getChildren().add(DialogBox.getFifiDialog(error, fifiImage)));
 
         stage.setScene(scene);
         stage.show();

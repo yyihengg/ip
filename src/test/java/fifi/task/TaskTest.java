@@ -3,6 +3,7 @@ package fifi.task;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -73,6 +74,31 @@ public class TaskTest {
         Task task = new TestTask(false, "read book");
 
         assertFalse(task.occursOn(LocalDate.of(2019, 12, 2)));
+    }
+
+    @Test
+    public void constructor_invalidDescriptionOrTimestampOrder_rejectedAndValidTaskStillWorks() {
+        LocalDateTime createdAt = LocalDateTime.of(2026, 9, 20, 9, 0);
+        String[] descriptions = {"", "  ", "work|book", "work\nbook", "work\u0000book"};
+        for (String description : descriptions) {
+            assertThrows(IllegalArgumentException.class, () -> new ToDo(false, description));
+            Task validTask = new ToDo(false, "ordinary work");
+            validTask.mark();
+            assertTrue(validTask.isMarked());
+        }
+        assertThrows(IllegalArgumentException.class, () ->
+                new ToDo(true, "work", createdAt, createdAt.minusSeconds(1)));
+        Task task = new ToDo(true, "work", createdAt, createdAt);
+        assertEquals(createdAt, task.getLastMarkedAt().orElseThrow());
+    }
+
+    @Test
+    public void constructor_invalidTaskDates_rejectedWhileSameDayEventsRemainValid() {
+        LocalDate date = LocalDate.of(2026, 9, 20);
+        assertThrows(IllegalArgumentException.class, () -> new Deadline(false, "work", LocalDate.of(0, 1, 1)));
+        assertThrows(IllegalArgumentException.class, () -> new Deadline(false, "work", LocalDate.of(10000, 1, 1)));
+        assertThrows(IllegalArgumentException.class, () -> new Event(false, "work", date, date.minusDays(1)));
+        assertTrue(new Event(false, "work", date, date).occursOn(date));
     }
 
     /**

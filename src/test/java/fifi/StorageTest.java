@@ -85,7 +85,7 @@ public class StorageTest {
 
         Files.writeString(dataFile, "X | 0 | unsupported task");
         IOException exception = assertThrows(IOException.class, storage::loadTasks);
-        assertEquals("Unsupported task type: X", exception.getMessage());
+        assertEquals("Invalid task data at line 1: Unsupported task type: X", exception.getMessage());
 
         Files.writeString(dataFile, "D | 0 | return book | 2019-12-02");
         assertInstanceOf(Deadline.class, storage.loadTasks().get(0));
@@ -134,7 +134,56 @@ public class StorageTest {
         IOException exception = assertThrows(IOException.class, () ->
                 new Storage(dataFile.toString()).loadTasks());
 
-        assertEquals("Invalid saved task: T | 0 | read book | yesterday | -", exception.getMessage());
+        assertEquals("Invalid task data at line 1: Invalid task description, dates, or timestamps.",
+                exception.getMessage());
+    }
+
+    @Test
+    public void loadTasks_malformedRecords_reportLineAndRecoverAfterCorrection() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage storage = new Storage(dataFile.toString());
+        String[] invalidRecords = {"T", "T | 2 | work", "T | 0 | ", "T | 0 | work | -",
+            "T | 0 | work | - | - | extra", "T | 0 | work|book", "T | 0 | work\u0000book",
+            "D | 0 | work | 2026-02-30", "D | 0 | work | 0000-01-01",
+            "E | 0 | work | 2026-09-21 | 2026-09-20",
+            "T | 1 | work | 2026-09-21T09:00:00 | 2026-09-20T09:00:00",
+            "T | 0 | work |  | -"};
+        for (String invalidRecord : invalidRecords) {
+            String content = "T | 0 | first task\n\n" + invalidRecord;
+            Files.writeString(dataFile, content);
+            IOException error = assertThrows(IOException.class, storage::loadTasks, invalidRecord);
+            assertTrue(error.getMessage().startsWith("Invalid task data at line 3:"), error.getMessage());
+            assertEquals(content, Files.readString(dataFile));
+
+            Files.writeString(dataFile, "\nT | 0 | valid task\n\n");
+            assertEquals("valid task", storage.loadTasks().get(0).getDescription());
+        }
+    }
+
+    @Test
+    public void loadTasks_blankLinesLegacyDuplicatesAndUnknownTimes_remainReadable() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Files.writeString(dataFile, "\nT | 0 | work\nT | 1 | work | - | -\n\n");
+        List<Task> tasks = new Storage(dataFile.toString()).loadTasks();
+
+        assertEquals(2, tasks.size());
+        assertTrue(tasks.get(0).getCreatedAt().isEmpty());
+        assertTrue(tasks.get(1).isMarked());
+    }
+
+    @Test
+    public void loadTasks_moreThanLimit_rejectedWhileExactlyOneHundredLoads() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        String validContent = ("T | 0 | legacy duplicate\n").repeat(100);
+        Files.writeString(dataFile, validContent);
+        Storage storage = new Storage(dataFile.toString());
+        assertEquals(100, storage.loadTasks().size());
+
+        Files.writeString(dataFile, validContent + "T | 0 | overflow");
+        IOException error = assertThrows(IOException.class, storage::loadTasks);
+        assertTrue(error.getMessage().startsWith("Invalid task data at line 101:"));
+        Files.writeString(dataFile, validContent);
+        assertEquals(100, storage.loadTasks().size());
     }
 
     private ArrayList<Task> getSampleTasks() {

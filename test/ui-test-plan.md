@@ -96,6 +96,11 @@ Hello! My name is Fifi ^^
 How may I help?
 ____________________________________________________________
 ____________________________________________________________
+[ERROR]
+Oops! I could not load your saved tasks. Invalid task data at line 1: Unsupported task type: X
+Your saved file has not been changed. Fix the data file and restart Fifi before changing tasks.
+____________________________________________________________
+____________________________________________________________
 Here are the tasks in your list:
 ____________________________________________________________
 ____________________________________________________________
@@ -1114,9 +1119,9 @@ Aim: Check whitespace, extra arguments, repeated parameters, reversed dates, and
 
 Inputs:
 ```text
-  todo	read  book  
+  todo	read  book
 list unexpected
-	list  
+	list
 bye unexpected
 deadline work /by 2026-09-20 /by 2026-09-21
 list
@@ -1270,4 +1275,119 @@ ____________________________________________________________
 BaiBai! Hope to see you soon ^^
 ____________________________________________________________
 
+```
+
+## Protects Corrupted Saved Data
+
+Aim: Check that malformed saved records produce a startup warning, block changes, and preserve the original file.
+
+Initial data file:
+```text
+T | 0 | valid task
+T
+```
+
+Inputs:
+```text
+todo new task
+mark 1
+unmark 1
+delete 1
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! I could not load your saved tasks. Invalid task data at line 2: Expected 3 or 5 fields.
+Your saved file has not been changed. Fix the data file and restart Fifi before changing tasks.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Tasks cannot be changed because saved data could not be loaded. Fix the data file and restart Fifi.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Tasks cannot be changed because saved data could not be loaded. Fix the data file and restart Fifi.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Tasks cannot be changed because saved data could not be loaded. Fix the data file and restart Fifi.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Tasks cannot be changed because saved data could not be loaded. Fix the data file and restart Fifi.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+T | 0 | valid task
+T
+```
+
+## Ignores Blank Lines In Legacy Saved Data
+
+Aim: Check that blank lines and existing duplicates remain readable.
+
+Initial data file:
+```text
+
+T | 0 | work
+
+T | 1 | work
+```
+
+Inputs:
+```text
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] work
+2. [T][X] work
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+
+T | 0 | work
+
+T | 1 | work
 ```

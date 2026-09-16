@@ -25,6 +25,14 @@ public abstract class Task {
     }
 
     protected Task(boolean marked, String description, LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
+        if (description == null || description.isBlank() || description.contains("|")
+                || description.chars().anyMatch(character -> Character.isISOControl(character) && character != '\t')) {
+            throw new IllegalArgumentException("Task descriptions must be nonblank "
+                    + "and contain no | or control characters.");
+        }
+        if (createdAt != null && lastMarkedAt != null && lastMarkedAt.isBefore(createdAt)) {
+            throw new IllegalArgumentException("Completion time cannot be earlier than creation time.");
+        }
         this.marked = marked;
         this.description = description;
         this.createdAt = createdAt;
@@ -104,6 +112,17 @@ public abstract class Task {
      */
     public boolean occursOn(LocalDate date) {
         return false;
+    }
+
+    /**
+     * Checks that a task date fits the four-digit positive-year save format.
+     *
+     * @param date the task date to validate
+     */
+    protected static void validateDate(LocalDate date) {
+        if (date == null || date.getYear() < 1 || date.getYear() > 9999) {
+            throw new IllegalArgumentException("Task dates must have a year between 0001 and 9999.");
+        }
     }
 
     /**

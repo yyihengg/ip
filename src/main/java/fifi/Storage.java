@@ -2,9 +2,10 @@ package fifi;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -56,13 +57,26 @@ public class Storage {
      */
     public List<Task> loadTasks() throws IOException {
         List<Task> tasks = new ArrayList<>();
-        if (!Files.exists(filePath)) {
+        List<String> savedTasks;
+        try {
+            savedTasks = Files.readAllLines(filePath);
+        } catch (NoSuchFileException exception) {
             return tasks;
         }
-
-        List<String> savedTasks = Files.readAllLines(filePath);
-        for (String savedTask : savedTasks) {
-            tasks.add(parseTask(savedTask));
+        for (int line = 0; line < savedTasks.size(); line++) {
+            String savedTask = savedTasks.get(line);
+            if (savedTask.isBlank()) {
+                continue;
+            }
+            try {
+                if (tasks.size() >= 100) {
+                    throw new IOException("The saved task list exceeds the limit of 100 tasks.");
+                }
+                tasks.add(parseTask(savedTask));
+            } catch (IOException exception) {
+                throw new IOException("Invalid task data at line " + (line + 1) + ": "
+                        + exception.getMessage(), exception);
+            }
         }
         return tasks;
     }
@@ -94,10 +108,22 @@ public class Storage {
      * @return the task represented by that line
      */
     private Task parseTask(String savedTask) throws IOException {
-        String[] parts = savedTask.split(FIELD_SEPARATOR_REGEX);
-        boolean isMarked = parts[STATUS_INDEX].equals(MARKED_STATUS);
-
+        String[] parts = savedTask.split(FIELD_SEPARATOR_REGEX, -1);
         try {
+            int legacyFieldCount = switch (parts[TASK_TYPE_INDEX]) {
+                case TODO_TASK_CODE -> 3;
+                case DEADLINE_TASK_CODE -> 4;
+                case EVENT_TASK_CODE -> 5;
+                default -> throw new IOException("Unsupported task type: " + parts[TASK_TYPE_INDEX]);
+            };
+            if (parts.length != legacyFieldCount && parts.length != legacyFieldCount + 2) {
+                throw new IOException("Expected " + legacyFieldCount + " or "
+                        + (legacyFieldCount + 2) + " fields.");
+            }
+            if (!parts[STATUS_INDEX].equals("0") && !parts[STATUS_INDEX].equals(MARKED_STATUS)) {
+                throw new IOException("Task status must be 0 or 1.");
+            }
+            boolean isMarked = parts[STATUS_INDEX].equals(MARKED_STATUS);
             return switch (parts[TASK_TYPE_INDEX]) {
                 case TODO_TASK_CODE -> new ToDo(isMarked, parts[NAME_INDEX],
                         parseOptionalTimestamp(parts, TODO_CREATED_AT_INDEX),
@@ -112,8 +138,8 @@ public class Storage {
                         parseOptionalTimestamp(parts, EVENT_LAST_MARKED_AT_INDEX));
                 default -> throw new IOException("Unsupported task type: " + parts[TASK_TYPE_INDEX]);
             };
-        } catch (ArrayIndexOutOfBoundsException | DateTimeParseException exception) {
-            throw new IOException("Invalid saved task: " + savedTask, exception);
+        } catch (DateTimeException | IllegalArgumentException exception) {
+            throw new IOException("Invalid task description, dates, or timestamps.", exception);
         }
     }
 

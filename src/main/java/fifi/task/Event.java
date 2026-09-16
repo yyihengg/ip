@@ -22,6 +22,7 @@ public class Event extends Task {
      */
     public Event(boolean marked, String description, LocalDate start, LocalDate end) {
         super(marked, description);
+        validateRange(start, end);
         this.start = start;
         this.end = end;
     }
@@ -39,6 +40,7 @@ public class Event extends Task {
     public Event(boolean marked, String description, LocalDate start, LocalDate end,
             LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
         super(marked, description, createdAt, lastMarkedAt);
+        validateRange(start, end);
         this.start = start;
         this.end = end;
     }
@@ -49,6 +51,14 @@ public class Event extends Task {
 
     public LocalDate getEnd() {
         return this.end;
+    }
+
+    private static void validateRange(LocalDate start, LocalDate end) {
+        validateDate(start);
+        validateDate(end);
+        if (end.isBefore(start)) {
+            throw new IllegalArgumentException("Event end date cannot be earlier than start date.");
+        }
     }
 
     @Override

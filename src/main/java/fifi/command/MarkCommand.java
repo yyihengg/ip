@@ -23,6 +23,11 @@ public class MarkCommand extends Command {
     }
 
     @Override
+    public boolean changesTasks() {
+        return true;
+    }
+
+    @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
         Task currentTask = tasks.get(taskIndex);
         currentTask.mark();

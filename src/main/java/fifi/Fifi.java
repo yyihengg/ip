@@ -2,9 +2,11 @@ package fifi;
 
 import java.io.IOException;
 import java.time.DateTimeException;
+import java.util.Optional;
 
 import fifi.command.Command;
 import fifi.exception.FifiException;
+import fifi.exception.InvalidDescriptionException;
 
 /**
  * Entry point for the Fifi chatbot application.
@@ -14,6 +16,7 @@ public class Fifi {
     private final TaskList tasks;
     private final Ui ui;
     private boolean isExit;
+    private ChatResponse startupError;
 
     /**
      * Creates a chatbot that stores tasks at the given file path.
@@ -32,6 +35,7 @@ public class Fifi {
      */
     public void run() {
         ui.showWelcome();
+        getStartupError().ifPresent(error -> ui.showError(error.getMessage()));
         while (!isExit) {
             if (!ui.hasNextCommand()) {
                 isExit = true;
@@ -40,7 +44,7 @@ public class Fifi {
             try {
                 String input = ui.readCommand();
                 Command command = Parser.parse(input);
-                command.execute(tasks, ui, storage);
+                executeCommand(command, ui);
                 isExit = command.isExit();
             } catch (FifiException e) {
                 ui.showError(e.getMessage());
@@ -74,7 +78,7 @@ public class Fifi {
         ResponseUi responseUi = new ResponseUi();
         try {
             Command command = Parser.parse(input);
-            command.execute(tasks, responseUi, storage);
+            executeCommand(command, responseUi);
             isExit = command.isExit();
         } catch (FifiException e) {
             responseUi.showError(e.getMessage());
@@ -116,10 +120,32 @@ public class Fifi {
         return "Oops! Please enter a task number between 1 and " + tasks.size() + ".";
     }
 
+    /**
+     * Returns a startup error for the GUI to display after its welcome message.
+     *
+     * @return the saved-data warning, or empty when loading succeeds
+     */
+    public Optional<ChatResponse> getStartupError() {
+        return Optional.ofNullable(startupError);
+    }
+
+    private void executeCommand(Command command, Ui commandUi) throws FifiException, IOException {
+        if (startupError != null && command.changesTasks()) {
+            throw new InvalidDescriptionException("Oops! Tasks cannot be changed "
+                    + "because saved data could not be loaded. "
+                    + "Fix the data file and restart Fifi.");
+        }
+        command.execute(tasks, commandUi, storage);
+    }
+
     private TaskList loadTasks() {
         try {
             return new TaskList(storage.loadTasks());
         } catch (IOException e) {
+            startupError = new ChatResponse("Oops! I could not load your saved tasks. " + e.getMessage()
+                    + "\nYour saved file has not been changed. "
+                    + "Fix the data file and restart Fifi before changing tasks.",
+                    true);
             return new TaskList();
         }
     }
