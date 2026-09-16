@@ -9,6 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 /**
  * Displays one chat message together with an avatar image.
@@ -59,6 +60,31 @@ public class DialogBox extends HBox {
     public static DialogBox getFifiDialog(String message, Image image) {
         DialogBox dialogBox = new DialogBox(message, image);
         dialogBox.flip();
+        return dialogBox;
+    }
+
+    /**
+     * Creates a Fifi dialog with a distinct appearance when the command failed.
+     *
+     * @param response message and error status supplied by Fifi
+     * @param image Fifi's avatar image
+     * @return a dialog box styled according to the response status
+     */
+    public static DialogBox getFifiDialog(ChatResponse response, Image image) {
+        DialogBox dialogBox = getFifiDialog(response.getMessage(), image);
+        if (response.isError()) {
+            Label heading = new Label("Error");
+            heading.getStyleClass().add("error-heading");
+            dialogBox.text.getStyleClass().add("error-message");
+            // The container's width includes its padding, so long messages still fit the chat area.
+            dialogBox.text.setMaxWidth(Double.MAX_VALUE);
+            dialogBox.getChildren().remove(dialogBox.text);
+            VBox errorBox = new VBox(6.0, heading, dialogBox.text);
+            errorBox.getStyleClass().add("error-box");
+            errorBox.setMinWidth(0.0);
+            errorBox.setMaxWidth(250.0);
+            dialogBox.getChildren().add(errorBox);
+        }
         return dialogBox;
     }
 

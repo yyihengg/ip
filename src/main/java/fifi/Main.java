@@ -45,6 +45,7 @@ public class Main extends Application {
         AnchorPane mainLayout = new AnchorPane();
         mainLayout.getChildren().addAll(scrollPane, userInput, sendButton);
         Scene scene = new Scene(mainLayout);
+        scene.getStylesheets().add(Main.class.getResource("/styles/dialog.css").toExternalForm());
 
         stage.setTitle("Fifi");
         stage.setResizable(false);
@@ -92,10 +93,10 @@ public class Main extends Application {
             return;
         }
 
-        String fifiText = fifi.getResponse(userText);
+        ChatResponse response = fifi.getChatResponse(userText);
         dialogContainer.getChildren().addAll(
                 DialogBox.getUserDialog(userText, userImage),
-                DialogBox.getFifiDialog(fifiText, fifiImage));
+                DialogBox.getFifiDialog(response, fifiImage));
         userInput.clear();
 
         if (fifi.isExit()) {

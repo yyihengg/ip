@@ -59,11 +59,11 @@ public class Ui {
     }
 
     /**
-     * Shows an error reported while handling a command.
+     * Shows an error with a heading that distinguishes it from normal responses.
      *
      * @param message explanation of the error
      */
     public void showError(String message) {
-        showResponse(message);
+        showResponse("[ERROR]", message);
     }
 }

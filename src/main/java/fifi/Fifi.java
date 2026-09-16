@@ -39,13 +39,13 @@ public class Fifi {
                 command.execute(tasks, ui, storage);
                 isExit = command.isExit();
             } catch (FifiException e) {
-                ui.showResponse(e.getMessage());
+                ui.showError(e.getMessage());
             } catch (IOException e) {
-                ui.showResponse("Oops! I could not save your tasks to the hard disk.");
+                ui.showError("Oops! I could not save your tasks to the hard disk.");
             } catch (DateTimeException e) {
-                ui.showResponse("Oops! Please use yyyy-MM-dd for dates.");
+                ui.showError("Oops! Please use yyyy-MM-dd for dates.");
             } catch (IndexOutOfBoundsException e) {
-                ui.showResponse(getTaskNumberError());
+                ui.showError(getTaskNumberError());
             }
         }
     }

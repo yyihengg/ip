@@ -81,6 +81,25 @@ public class UiTest {
                 output.toString(StandardCharsets.UTF_8));
     }
 
+    @Test
+    public void showError_thenNormalResponse_onlyErrorHasHeading() {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Ui ui = new Ui();
+
+        ui.showError("Oops! Please use yyyy-MM-dd for dates.");
+        ui.showResponse("Here are the tasks in your list:");
+
+        assertEquals(normalizeLineEndings("""
+                ____________________________________________________________
+                [ERROR]
+                Oops! Please use yyyy-MM-dd for dates.
+                ____________________________________________________________
+                ____________________________________________________________
+                Here are the tasks in your list:
+                ____________________________________________________________
+                """), normalizeLineEndings(output.toString(StandardCharsets.UTF_8)));
+    }
+
     private ByteArrayOutputStream replaceSystemOut() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
