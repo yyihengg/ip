@@ -1212,3 +1212,62 @@ Here are the tasks in your list:
 ____________________________________________________________
 
 ```
+
+## Rejects Duplicate Tasks And Recovers
+
+Aim: Check that duplicates ignore completion status and that deletion allows adding the same details again.
+
+Inputs:
+```text
+todo read book
+mark 1
+todo read book
+list
+delete 1
+todo read book
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] read book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+Nice! I've marked this task as done:
+[T][X] read book
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! A task with the same details already exists.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][X] read book
+____________________________________________________________
+____________________________________________________________
+Got it. I've removed this task:
+    [T][X] read book
+Now you have 0 tasks in the list ^^.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] read book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```

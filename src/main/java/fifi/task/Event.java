@@ -52,6 +52,12 @@ public class Event extends Task {
     }
 
     @Override
+    public boolean hasSameDetails(Task other) {
+        return super.hasSameDetails(other) && start.equals(((Event) other).start)
+                && end.equals(((Event) other).end);
+    }
+
+    @Override
     public boolean occursOn(LocalDate date) {
         return !date.isBefore(start) && !date.isAfter(end);
     }

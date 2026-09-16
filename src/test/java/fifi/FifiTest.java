@@ -180,6 +180,23 @@ public class FifiTest {
         assertEquals("This file prevents creating a directory.", Files.readString(blockedDirectory));
     }
 
+    @Test
+    public void getChatResponse_duplicateTask_savedDataUnchangedAndDeletionAllowsAddingAgain() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Fifi fifi = new Fifi(dataFile.toString());
+        assertFalse(fifi.getChatResponse("todo read book").isError());
+        assertFalse(fifi.getChatResponse("mark 1").isError());
+        String savedData = Files.readString(dataFile);
+
+        ChatResponse duplicate = fifi.getChatResponse("todo read book");
+        assertTrue(duplicate.isError());
+        assertEquals("Oops! A task with the same details already exists.", duplicate.getMessage());
+        assertEquals(savedData, Files.readString(dataFile));
+        assertTrue(fifi.getResponse("list").contains("1. [T][X] read book"));
+        assertFalse(fifi.getChatResponse("delete 1").isError());
+        assertFalse(fifi.getChatResponse("todo read book").isError());
+    }
+
     private String normalizeLineEndings(String text) {
         return text.replace("\r\n", "\n");
     }

@@ -43,6 +43,11 @@ public class Deadline extends Task {
     }
 
     @Override
+    public boolean hasSameDetails(Task other) {
+        return super.hasSameDetails(other) && dueDate.equals(((Deadline) other).dueDate);
+    }
+
+    @Override
     public boolean occursOn(LocalDate date) {
         return dueDate.isEqual(date);
     }

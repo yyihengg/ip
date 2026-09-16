@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 
+import fifi.exception.DuplicateTaskException;
 import fifi.exception.ExcessiveTaskException;
 import fifi.task.Deadline;
 import fifi.task.Event;
@@ -165,6 +166,43 @@ public class TaskListTest {
                 2. [D][ ] return book (by: Dec 02 2019)
                 3. [E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)""",
                 tasks.toDisplayString());
+    }
+
+    @Test
+    public void add_duplicateDetails_rejectedWithoutAffectingLaterAdditions() throws Exception {
+        TaskList tasks = new TaskList();
+        LocalDate date = LocalDate.of(2026, 9, 20);
+        Task[] originals = {new ToDo(false, "work"), new Deadline(false, "work", date),
+            new Event(false, "work", date, date)};
+        Task[] duplicates = {new ToDo(true, " work "), new Deadline(true, "work", date),
+            new Event(true, "work", date, date)};
+        for (int i = 0; i < originals.length; i++) {
+            tasks.add(originals[i]);
+            int size = tasks.size();
+            assertThrows(DuplicateTaskException.class, () -> tasks.add(duplicates[size - 1]));
+            assertEquals(size, tasks.size());
+            assertEquals(originals[i], tasks.get(i));
+        }
+        tasks.add(new Deadline(false, "work", date.plusDays(1)));
+        tasks.add(new Event(false, "work", date, date.plusDays(1)));
+        tasks.add(new ToDo(false, "Work"));
+        assertEquals(6, tasks.size());
+        tasks.delete(0);
+        tasks.add(new ToDo(false, "work"));
+        assertEquals(6, tasks.size());
+    }
+
+    @Test
+    public void constructor_savedDuplicates_preservedWhileNewDuplicateRejected() throws Exception {
+        ArrayList<Task> savedTasks = new ArrayList<>();
+        savedTasks.add(new ToDo(false, "work"));
+        savedTasks.add(new ToDo(true, "work"));
+        TaskList tasks = new TaskList(savedTasks);
+
+        assertEquals(2, tasks.size());
+        assertThrows(DuplicateTaskException.class, () -> tasks.add(new ToDo(false, "work")));
+        tasks.add(new ToDo(false, "different work"));
+        assertEquals(3, tasks.size());
     }
 
     private ArrayList<Task> getSampleTasks() {

@@ -48,6 +48,18 @@ public abstract class Task {
     }
 
     /**
+     * Returns whether another task has the same type and case-sensitive description.
+     * Completion status and timestamps do not distinguish otherwise identical tasks.
+     *
+     * @param other the task to compare
+     * @return whether the task details match
+     */
+    public boolean hasSameDetails(Task other) {
+        return other != null && getClass().equals(other.getClass())
+                && description.strip().equals(other.description.strip());
+    }
+
+    /**
      * Returns 1 when the task is done and 0 when it is not done.
      *
      * @return the status value used when saving the task to disk

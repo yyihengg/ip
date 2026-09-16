@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import fifi.exception.DuplicateTaskException;
 import fifi.exception.ExcessiveTaskException;
 import fifi.task.Task;
 
@@ -47,13 +48,17 @@ public class TaskList {
      *
      * @param task the task to add
      * @throws ExcessiveTaskException if the task list already has too many tasks
+     * @throws DuplicateTaskException if another task has the same details
      */
-    public void add(Task task) throws ExcessiveTaskException {
+    public void add(Task task) throws ExcessiveTaskException, DuplicateTaskException {
         if (tasks.size() >= MAX_TASKS) {
             throw new ExcessiveTaskException(
                     """
                     You have exceeded the cap of 100 tasks! Delete old tasks in order to make space for new tasks.\
                     """);
+        }
+        if (tasks.stream().anyMatch(existingTask -> existingTask.hasSameDetails(task))) {
+            throw new DuplicateTaskException("Oops! A task with the same details already exists.");
         }
         tasks.add(task);
     }
