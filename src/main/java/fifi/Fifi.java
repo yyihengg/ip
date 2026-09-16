@@ -33,6 +33,10 @@ public class Fifi {
     public void run() {
         ui.showWelcome();
         while (!isExit) {
+            if (!ui.hasNextCommand()) {
+                isExit = true;
+                break;
+            }
             try {
                 String input = ui.readCommand();
                 Command command = Parser.parse(input);

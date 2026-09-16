@@ -49,6 +49,15 @@ public class Ui {
     }
 
     /**
+     * Returns whether another command is available before reading it.
+     *
+     * @return false when console input has ended
+     */
+    public boolean hasNextCommand() {
+        return scanner.hasNextLine();
+    }
+
+    /**
      * Shows one or more chatbot response messages on separate lines.
      *
      * @param messages the messages to show between separator lines

@@ -142,6 +142,19 @@ public class FifiTest {
     }
 
     @Test
+    public void run_inputEndsWithoutBye_exitsCleanlyAfterProcessingCommands() {
+        System.setIn(new ByteArrayInputStream("todo read book\nlist\n".getBytes(StandardCharsets.UTF_8)));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+
+        fifi.run();
+
+        assertTrue(fifi.isExit());
+        assertTrue(output.toString(StandardCharsets.UTF_8).contains("1. [T][ ] read book"));
+    }
+
+    @Test
     public void getChatResponse_emptyTaskList_invalidTaskNumbersDoNotPreventAddingTasks() {
         Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
         ChatResponse error = fifi.getChatResponse("delete 1");

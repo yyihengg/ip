@@ -65,7 +65,8 @@ public class ParserTest {
     @Test
     public void parse_taskNumberCommandsWithInvalidNumbers_helpfulExceptionAndRecovery() throws Exception {
         String[] commands = {"mark", "unmark", "delete"};
-        String[] invalidNumbers = {"", "   ", "three", "1 read book", "1.5", "2147483648", "-2147483649"};
+        String[] invalidNumbers = {"", "   ", "three", "1 read book", "1.5", "2147483648", "-2147483649",
+            "0", "-1", "-2147483648", "+1", "١"};
         for (String command : commands) {
             for (String invalidNumber : invalidNumbers) {
                 Class<? extends Command> expectedType = Parser.parse(command + " 1").getClass();
@@ -179,9 +180,10 @@ public class ParserTest {
             {"event meeting /from /to   ", "Oops! You did not provide an end date for the event"},
             {"event meeting /to 2025-10-03", "Oops! You did not provide a start date for the event"},
             {"event meeting /from   /to 2025-10-03", "Oops! You did not provide a start date for the event"},
-            {"event meeting /from/to 2025-10-03", "Oops! You did not provide a start date for the event"},
+            {"event meeting /from/to 2025-10-03", "Oops! Invalid event parameter. "
+                    + "Use separate /by, /from, or /to tokens as appropriate."},
             {"event meeting /to 2025-10-03 /from 2025-10-01",
-                "Oops! You did not provide a start date for the event"},
+                "Oops! Put /from before /to in an event command."},
             {"event /from invalid /to invalid", "Oops! You cannot have an empty event description"}
         };
         for (String[] invalidEvent : invalidEvents) {
@@ -287,6 +289,72 @@ public class ParserTest {
     }
 
     // ---------- date formatting ----------
+
+    @Test
+    public void parse_surroundingWhitespaceAndTabs_validCommandsKeepDescriptions() throws Exception {
+        assertInstanceOf(ListCommand.class, Parser.parse(" \tlist\t "));
+        assertInstanceOf(AddTodoCommand.class, Parser.parse("\ttodo\tread  书!\t"));
+        assertInstanceOf(AddEventCommand.class,
+                Parser.parse(" event\tmeeting\t/from\t2026-09-20\t/to\t2026-09-20 "));
+        assertEquals(LocalDate.of(2026, 9, 20), Parser.parseShowDate("\tshow\t2026-09-20 "));
+        assertThrows(InvalidDescriptionException.class, () -> Parser.parseShowDate("list 2026-09-20"));
+        assertInstanceOf(ExitCommand.class, Parser.parse(" bye "));
+    }
+
+    @Test
+    public void parse_argumentFreeCommandsWithExtraText_rejectedWithoutExiting() throws Exception {
+        for (String command : new String[]{"list", "bye"}) {
+            InvalidDescriptionException error = assertThrows(InvalidDescriptionException.class, () ->
+                    Parser.parse(command + " unexpected"));
+            assertEquals("Oops! Use " + command + " without any arguments.", error.getMessage());
+            assertInstanceOf(ListCommand.class, Parser.parse("list"));
+        }
+    }
+
+    @Test
+    public void parse_duplicateOrMalformedParameters_rejectedAndNextCommandAccepted() throws Exception {
+        String[] invalidCommands = {
+            "deadline work /by 2026-09-20 /by 2026-09-21",
+            "deadline work /by2026-09-20",
+            "deadline work /from 2026-09-20 /by 2026-09-21",
+            "event work /from 2026-09-20 /from 2026-09-21 /to 2026-09-22",
+            "event work /from 2026-09-20 /to 2026-09-21 /to 2026-09-22",
+            "event work /from2026-09-20 /to 2026-09-21"
+        };
+        for (String invalidCommand : invalidCommands) {
+            assertThrows(InvalidDescriptionException.class, () -> Parser.parse(invalidCommand), invalidCommand);
+            assertInstanceOf(AddDeadlineCommand.class, Parser.parse("deadline work /by 2026-09-20"));
+        }
+    }
+
+    @Test
+    public void parse_reversedEventDates_rejectedAndSameDayEventAccepted() throws Exception {
+        InvalidDescriptionException error = assertThrows(InvalidDescriptionException.class, () ->
+                Parser.parse("event work /from 2026-09-21 /to 2026-09-20"));
+        assertEquals("Oops! An event's end date must be on or after its start date.", error.getMessage());
+        assertInstanceOf(AddEventCommand.class,
+                Parser.parse("event work /from 2026-09-20 /to 2026-09-20"));
+    }
+
+    @Test
+    public void parse_unsafeDescriptionCharacters_rejectedWhileOrdinaryTextAccepted() throws Exception {
+        String[] commands = {"todo read | book", "todo read\nbook", "todo read\u0000book",
+            "deadline read | book /by 2026-09-20", "event read | book /from 2026-09-20 /to 2026-09-21"};
+        for (String command : commands) {
+            assertThrows(InvalidDescriptionException.class, () -> Parser.parse(command));
+            assertInstanceOf(AddTodoCommand.class, Parser.parse("todo read 书! @home #1 / notes"));
+        }
+    }
+
+    @Test
+    public void parseDate_unsupportedYears_rejectedWhileBoundaryAndLeapDatesAccepted() {
+        for (String date : new String[]{"0000-01-01", "-0001-01-01", "+10000-01-01", "2026-2-01"}) {
+            assertThrows(DateTimeException.class, () -> Parser.parseDate(date));
+            assertEquals(LocalDate.of(2024, 2, 29), Parser.parseDate("2024-02-29"));
+        }
+        assertEquals(LocalDate.of(1, 1, 1), Parser.parseDate("0001-01-01"));
+        assertEquals(LocalDate.of(9999, 12, 31), Parser.parseDate("9999-12-31"));
+    }
 
     @Test
     public void formatDateForStorage_validDate_isoStringReturned() {

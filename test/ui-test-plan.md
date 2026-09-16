@@ -41,7 +41,7 @@ Now you have 1 tasks in the list.
 ____________________________________________________________
 ____________________________________________________________
 [ERROR]
-Oops! Please enter a task number between 1 and 1.
+Oops! Please enter a task number after mark, e.g. mark 1.
 ____________________________________________________________
 ____________________________________________________________
 Here are the tasks in your list:
@@ -49,7 +49,7 @@ Here are the tasks in your list:
 ____________________________________________________________
 ____________________________________________________________
 [ERROR]
-Oops! Please enter a task number between 1 and 1.
+Oops! Please enter a task number after unmark, e.g. unmark 1.
 ____________________________________________________________
 ____________________________________________________________
 Nice! I've marked this task as done:
@@ -155,7 +155,7 @@ Here are the tasks in your list:
 ____________________________________________________________
 ____________________________________________________________
 [ERROR]
-Oops! You did not provide a start date for the event
+Oops! Put /from before /to in an event command.
 ____________________________________________________________
 ____________________________________________________________
 [ERROR]
@@ -1104,6 +1104,111 @@ UhOh! You entered a date that is in the future. Please enter today or an earlier
 ____________________________________________________________
 ____________________________________________________________
 BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Validates Command Syntax And Recovers
+
+Aim: Check whitespace, extra arguments, repeated parameters, reversed dates, and safe descriptions without losing tasks.
+
+Inputs:
+```text
+  todo	read  book  
+list unexpected
+	list  
+bye unexpected
+deadline work /by 2026-09-20 /by 2026-09-21
+list
+event work /from 2026-09-22 /to 2026-09-20
+event work /from 2026-09-20 /to 2026-09-20
+todo read | book
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[T][ ] read  book
+Now you have 1 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Use list without any arguments.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] read  book
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Use bye without any arguments.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Specify /by only once.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] read  book
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! An event's end date must be on or after its start date.
+____________________________________________________________
+____________________________________________________________
+Got it. I've added this task:
+[E][ ] work (from: Sep 20 2026 to: Sep 20 2026)
+Now you have 2 tasks in the list.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Task descriptions cannot contain | or control characters.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] read  book
+2. [E][ ] work (from: Sep 20 2026 to: Sep 20 2026)
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+## Handles Console End Of Input
+
+Aim: Check that console input ending without bye exits cleanly after the last valid command.
+
+Inputs:
+```text
+list
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
 ____________________________________________________________
 
 ```

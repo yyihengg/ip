@@ -4,7 +4,10 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import fifi.command.AddDeadlineCommand;
 import fifi.command.AddEventCommand;
@@ -47,8 +50,12 @@ public class Parser {
      * @throws InvalidDescriptionException if a command description is missing or a task number is not an integer
      */
     public static Command parse(String input) throws InvalidCommandException, InvalidDescriptionException {
+        input = input.strip();
         String command = parseCommand(input);
         String arguments = parseArguments(input, command);
+        if ((command.equals("list") || command.equals("bye")) && !arguments.isEmpty()) {
+            throw new InvalidDescriptionException("Oops! Use " + command + " without any arguments.");
+        }
         return switch (command) {
             case "bye" -> new ExitCommand();
             case "list" -> new ListCommand();
@@ -76,6 +83,9 @@ public class Parser {
      * @throws DateTimeException if the input does not match the required format
      */
     public static LocalDate parseDate(String input) throws DateTimeException {
+        if (!input.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || input.startsWith("0000-")) {
+            throw new DateTimeException("Dates must use yyyy-MM-dd with a year from 0001 to 9999.");
+        }
         return LocalDate.parse(input, INPUT_DATE_FORMATTER);
     }
 
@@ -88,6 +98,10 @@ public class Parser {
      * @throws DateTimeException if the date does not match the required format
      */
     public static LocalDate parseShowDate(String input) throws InvalidDescriptionException, DateTimeException {
+        input = input.strip();
+        if (!parseCommand(input).equals("show")) {
+            throw new InvalidDescriptionException("Oops! Use show yyyy-MM-dd.");
+        }
         return parseDateArgument(parseArguments(input, "show"));
     }
 
@@ -125,13 +139,13 @@ public class Parser {
      * @return the command word at the start of the input
      */
     private static String parseCommand(String input) {
-        return input.split(" ", 2)[0];
+        return input.split("\\s+", 2)[0];
     }
 
     private static String parseArguments(String input, String command) {
         // The dispatcher must supply the matching command before this helper removes it.
         assert parseCommand(input).equals(command) : "Argument parsing must use the dispatched command";
-        return input.substring(command.length()).trim();
+        return input.substring(command.length()).strip();
     }
 
     /**
@@ -143,7 +157,14 @@ public class Parser {
      */
     private static int parseTaskIndex(String arguments, String command) throws InvalidDescriptionException {
         try {
-            return Integer.parseInt(arguments) - 1;
+            if (!arguments.matches("[0-9]+")) {
+                throw new NumberFormatException("A task number must contain digits only.");
+            }
+            int taskNumber = Integer.parseInt(arguments);
+            if (taskNumber < 1) {
+                throw new NumberFormatException("A task number must be positive.");
+            }
+            return taskNumber - 1;
         } catch (NumberFormatException e) {
             // Convert malformed user input into an error handled by both console and GUI callers.
             throw new InvalidDescriptionException(
@@ -188,6 +209,7 @@ public class Parser {
         if (arguments.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty todo description");
         }
+        validateDescription(arguments);
         return new ToDo(false, arguments);
     }
 
@@ -200,7 +222,8 @@ public class Parser {
      * @throws DateTimeException if the date does not match the required format
      */
     private static Task parseDeadline(String arguments) throws InvalidDescriptionException, DateTimeException {
-        int byIndex = arguments.indexOf(DEADLINE_DATE_MARKER);
+        validateParameterTokens(arguments, "deadline", DEADLINE_DATE_MARKER);
+        int byIndex = findDateMarker(arguments, DEADLINE_DATE_MARKER);
         if (byIndex == -1
                 || arguments.substring(byIndex + DEADLINE_DATE_MARKER.length()).trim().isEmpty()) {
             throw new InvalidDescriptionException("Oops! You did not provide a date for the deadline");
@@ -210,6 +233,7 @@ public class Parser {
         if (description.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty deadline description");
         }
+        validateDescription(description);
 
         String deadlineDate = arguments.substring(byIndex + DEADLINE_DATE_MARKER.length()).trim();
         return new Deadline(false, description, parseDate(deadlineDate));
@@ -223,8 +247,12 @@ public class Parser {
      * @throws InvalidDescriptionException if the event description, start date, or end date is missing
      */
     private static Task parseEvent(String arguments) throws InvalidDescriptionException {
-        int fromIndex = arguments.indexOf(EVENT_START_MARKER);
-        int toIndex = arguments.indexOf(EVENT_END_MARKER);
+        validateParameterTokens(arguments, "event", EVENT_START_MARKER, EVENT_END_MARKER);
+        int fromIndex = findDateMarker(arguments, EVENT_START_MARKER);
+        int toIndex = findDateMarker(arguments, EVENT_END_MARKER);
+        if (fromIndex != -1 && toIndex != -1 && fromIndex > toIndex) {
+            throw new InvalidDescriptionException("Oops! Put /from before /to in an event command.");
+        }
         boolean hasEndMarker = toIndex != -1;
         String to = hasEndMarker ? arguments.substring(toIndex + EVENT_END_MARKER.length()).trim() : "";
         if (to.isEmpty()) {
@@ -243,7 +271,55 @@ public class Parser {
         if (description.isBlank()) {
             throw new InvalidDescriptionException("Oops! You cannot have an empty event description");
         }
+        validateDescription(description);
 
-        return new Event(false, description, parseDate(from), parseDate(to));
+        LocalDate startDate = parseDate(from);
+        LocalDate endDate = parseDate(to);
+        if (startDate.isAfter(endDate)) {
+            throw new InvalidDescriptionException("Oops! An event's end date must be on or after its start date.");
+        }
+        return new Event(false, description, startDate, endDate);
+    }
+
+    /**
+     * Rejects text that cannot be safely stored as one task description.
+     */
+    private static void validateDescription(String description) throws InvalidDescriptionException {
+        if (description.contains("|") || description.codePoints()
+                .anyMatch(character -> Character.isISOControl(character) && character != '\t')) {
+            throw new InvalidDescriptionException("Oops! Task descriptions cannot contain | or control characters.");
+        }
+    }
+
+    /**
+     * Finds one complete parameter token without matching parts of ordinary words.
+     */
+    private static int findDateMarker(String arguments, String marker) throws InvalidDescriptionException {
+        Matcher matches = Pattern.compile("(?<!\\S)" + Pattern.quote(marker) + "(?=\\s|$)").matcher(arguments);
+        if (!matches.find()) {
+            return -1;
+        }
+        int markerIndex = matches.start();
+        if (matches.find()) {
+            throw new InvalidDescriptionException("Oops! Specify " + marker + " only once.");
+        }
+        return markerIndex;
+    }
+
+    /**
+     * Rejects unsupported date parameters and parameters glued to their values.
+     */
+    private static void validateParameterTokens(String arguments, String command, String... allowedMarkers)
+            throws InvalidDescriptionException {
+        for (String token : arguments.split("\\s+")) {
+            if (token.startsWith(DEADLINE_DATE_MARKER) || token.startsWith(EVENT_START_MARKER)
+                    || token.startsWith(EVENT_END_MARKER)) {
+                boolean isAllowed = Arrays.asList(allowedMarkers).contains(token);
+                if (!isAllowed) {
+                    throw new InvalidDescriptionException("Oops! Invalid " + command
+                            + " parameter. Use separate /by, /from, or /to tokens as appropriate.");
+                }
+            }
+        }
     }
 }
