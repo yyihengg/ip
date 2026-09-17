@@ -22,6 +22,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -182,6 +183,56 @@ public class DialogBoxTest {
                 DialogBox errorDialog = (DialogBox) dialogs.getChildren().getLast();
                 assertEquals(fifiAvatar.getImage(), ((ImageView) errorDialog.getChildren().getFirst()).getImage());
                 assertNotNull(errorDialog.lookup(".error-box"));
+            } finally {
+                stage.close();
+            }
+        });
+    }
+
+    @Test
+    public void start_fxmlActions_preservesInteraction() throws Exception {
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        runOnJavaFxThread(() -> {
+            Stage stage = new Stage();
+            stage.setOpacity(0);
+            try {
+                new Main(fifi).start(stage);
+                Parent root = stage.getScene().getRoot();
+                TextField input = (TextField) root.lookup("#userInput");
+                Button send = (Button) root.lookup("#sendButton");
+                ScrollPane scroll = (ScrollPane) root.lookup("#scrollPane");
+                VBox dialogs = (VBox) scroll.getContent();
+                assertTrue(stage.isResizable());
+                input.setText("   ");
+                send.fire();
+                assertEquals(1, dialogs.getChildren().size());
+                input.setText("show 2026-02-30");
+                send.fire();
+                assertNotNull(dialogs.getChildren().getLast().lookup(".error-box"));
+                input.setText("todo read book");
+                input.fireEvent(new ActionEvent());
+                assertEquals("", input.getText());
+                assertTrue(fifi.getResponse("list").contains("read book"));
+                for (int i = 0; i < 12; i++) {
+                    input.setText("list");
+                    send.fire();
+                }
+                root.applyCss();
+                root.layout();
+                assertEquals(1.0, scroll.getVvalue());
+                root.resize(600.0, 800.0);
+                root.applyCss();
+                root.layout();
+                assertTrue(input.getWidth() > 300.0);
+                assertTrue(scroll.getWidth() > 500.0);
+                input.setText("bye extra");
+                send.fire();
+                assertFalse(input.isDisabled());
+                input.setText("bye");
+                send.fire();
+                assertTrue(input.isDisabled());
+                assertTrue(send.isDisabled());
+                assertTrue(fifi.isExit());
             } finally {
                 stage.close();
             }

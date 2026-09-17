@@ -1,22 +1,27 @@
 package fifi;
 
+import java.io.IOException;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 /**
  * Displays one chat message together with an avatar image.
  */
 public class DialogBox extends HBox {
-    private final Label text;
-    private final ImageView displayPicture;
+    @FXML
+    private Label text;
+    @FXML
+    private ImageView displayPicture;
 
     /**
      * Creates a dialog box containing a message and avatar image.
@@ -25,19 +30,16 @@ public class DialogBox extends HBox {
      * @param image avatar image to show beside the message
      */
     private DialogBox(String message, Image image) {
-        text = new Label(message);
-        displayPicture = new ImageView(image);
-
-        text.setWrapText(true);
-        text.setMaxWidth(250.0);
-        text.setMinHeight(Region.USE_PREF_SIZE);
-        displayPicture.setFitWidth(100.0);
-        displayPicture.setFitHeight(100.0);
-        displayPicture.setPreserveRatio(true);
-        setSpacing(10.0);
-        setAlignment(Pos.TOP_RIGHT);
-
-        getChildren().addAll(text, displayPicture);
+        try {
+            FXMLLoader loader = new FXMLLoader(DialogBox.class.getResource("/view/DialogBox.fxml"));
+            loader.setController(this);
+            loader.setRoot(this);
+            loader.load();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not load Fifi's message layout.", e);
+        }
+        text.setText(message);
+        displayPicture.setImage(image);
     }
 
     /**
@@ -48,7 +50,9 @@ public class DialogBox extends HBox {
      * @return a dialog box for the user's message
      */
     public static DialogBox getUserDialog(String message, Image image) {
-        return new DialogBox(message, image);
+        DialogBox dialogBox = new DialogBox(message, image);
+        dialogBox.text.getStyleClass().add("user-message");
+        return dialogBox;
     }
 
     /**
@@ -76,6 +80,7 @@ public class DialogBox extends HBox {
         if (response.isError()) {
             Label heading = new Label("Error");
             heading.getStyleClass().add("error-heading");
+            dialogBox.text.getStyleClass().remove("chat-message");
             dialogBox.text.getStyleClass().add("error-message");
             // The container's width includes its padding, so long messages still fit the chat area.
             dialogBox.text.setMaxWidth(Double.MAX_VALUE);

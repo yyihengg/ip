@@ -245,6 +245,8 @@ See the repository README for [developer setup](../README.md#developer-setup) an
 
 ## Acknowledgements
 
+- [SE-EDU JavaFX tutorial Part 4](https://se-education.org/guides/tutorials/javaFxPart4.html)
+  provides the FXML layout and controller patterns adapted for Fifi.
 - [JavaFX (OpenJFX)](https://openjfx.io/) provides Fifi's graphical interface.
 - [JUnit 5](https://junit.org/junit5/) is used for automated unit testing.
 

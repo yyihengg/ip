@@ -8,7 +8,7 @@ import javafx.application.Application;
 public class Launcher {
 
     /**
-     * Launches the JavaFX Hello World application.
+     * Launches the Fifi JavaFX application.
      *
      * @param args command-line arguments passed to JavaFX
      */
