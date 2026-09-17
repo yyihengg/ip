@@ -6,7 +6,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -17,10 +16,8 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
     private static final String SAVE_FILE_PATH = "data/duke.txt";
-    private static final int AVATAR_SIZE = 100;
-
-    private final Image userImage = createAvatarImage(0xFFB7E4C7);
-    private final Image fifiImage = createAvatarImage(0xFFFFD6A5);
+    private final Image userImage = new Image(Main.class.getResource("/user.png").toExternalForm());
+    private final Image fifiImage = new Image(Main.class.getResource("/fifi.png").toExternalForm());
     private final Fifi fifi;
 
     private ScrollPane scrollPane;
@@ -116,21 +113,5 @@ public class Main extends Application {
             userInput.setDisable(true);
             sendButton.setDisable(true);
         }
-    }
-
-    /**
-     * Creates a simple square avatar image for a dialog box.
-     *
-     * @param color the ARGB color to fill the image with
-     * @return the generated avatar image
-     */
-    private static Image createAvatarImage(int color) {
-        WritableImage image = new WritableImage(AVATAR_SIZE, AVATAR_SIZE);
-        for (int x = 0; x < AVATAR_SIZE; x++) {
-            for (int y = 0; y < AVATAR_SIZE; y++) {
-                image.getPixelWriter().setArgb(x, y, color);
-            }
-        }
-        return image;
     }
 }

@@ -19,6 +19,14 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'resources'
+        }
+    }
+}
+
 dependencies {
     String javaFxVersion = '17.0.7'
     String jUnitVersion = '5.14.4'

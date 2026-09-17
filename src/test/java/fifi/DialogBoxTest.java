@@ -23,7 +23,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -144,6 +146,46 @@ public class DialogBoxTest {
             }
         });
         assertEquals("T", Files.readString(dataFile));
+    }
+
+    @Test
+    public void start_validThenInvalidCommand_packagedAvatarsRemainCorrect() throws Exception {
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        runOnJavaFxThread(() -> {
+            Stage stage = new Stage();
+            stage.setOpacity(0);
+            try {
+                new Main(fifi).start(stage);
+                Parent root = stage.getScene().getRoot();
+                root.applyCss();
+                root.layout();
+                VBox dialogs = (VBox) ((ScrollPane) root.lookup(".scroll-pane")).getContent();
+                DialogBox greeting = (DialogBox) dialogs.getChildren().getFirst();
+                ImageView fifiAvatar = (ImageView) greeting.getChildren().getFirst();
+                assertEquals(Main.class.getResource("/fifi.png").toExternalForm(), fifiAvatar.getImage().getUrl());
+                assertFalse(fifiAvatar.getImage().isError());
+                assertTrue(fifiAvatar.getImage().getWidth() > 0);
+                assertTrue(fifiAvatar.isPreserveRatio());
+
+                TextField input = (TextField) root.lookup(".text-field");
+                input.setText("todo Prepare slides for the project meeting");
+                input.fireEvent(new ActionEvent());
+                DialogBox userDialog = (DialogBox) dialogs.getChildren().get(1);
+                ImageView userAvatar = (ImageView) userDialog.getChildren().getLast();
+                assertEquals(Main.class.getResource("/user.png").toExternalForm(), userAvatar.getImage().getUrl());
+                assertFalse(userAvatar.getImage().isError());
+                assertTrue(userAvatar.getImage().getWidth() > 0);
+                assertTrue(userAvatar.isPreserveRatio());
+
+                input.setText("show 2026-02-30");
+                input.fireEvent(new ActionEvent());
+                DialogBox errorDialog = (DialogBox) dialogs.getChildren().getLast();
+                assertEquals(fifiAvatar.getImage(), ((ImageView) errorDialog.getChildren().getFirst()).getImage());
+                assertNotNull(errorDialog.lookup(".error-box"));
+            } finally {
+                stage.close();
+            }
+        });
     }
 
     private static VBox layOutDialogs(DialogBox... dialogs) {

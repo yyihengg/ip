@@ -33,6 +33,7 @@ public class DialogBox extends HBox {
         text.setMinHeight(Region.USE_PREF_SIZE);
         displayPicture.setFitWidth(100.0);
         displayPicture.setFitHeight(100.0);
+        displayPicture.setPreserveRatio(true);
         setSpacing(10.0);
         setAlignment(Pos.TOP_RIGHT);
 
