@@ -105,12 +105,12 @@ public class TaskTest {
      * Provides the smallest concrete task needed to test shared task behavior.
      */
     private static class TestTask extends Task {
-        private TestTask(boolean marked, String name) {
-            super(marked, name);
+        private TestTask(boolean isMarked, String name) {
+            super(isMarked, name);
         }
 
-        private TestTask(boolean marked, String name, LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
-            super(marked, name, createdAt, lastMarkedAt);
+        private TestTask(boolean isMarked, String name, LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
+            super(isMarked, name, createdAt, lastMarkedAt);
         }
 
         @Override

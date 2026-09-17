@@ -13,19 +13,19 @@ public abstract class Task {
     private static final String UNKNOWN_TIMESTAMP = "-";
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    private boolean marked;
+    private boolean isMarked;
     private final String description;
     private final LocalDateTime createdAt;
     private LocalDateTime lastMarkedAt;
 
-    protected Task(boolean marked, String description) {
-        this(marked, description, LocalDateTime.now(), null);
-        if (marked) {
+    protected Task(boolean isMarked, String description) {
+        this(isMarked, description, LocalDateTime.now(), null);
+        if (isMarked) {
             this.lastMarkedAt = this.createdAt;
         }
     }
 
-    protected Task(boolean marked, String description, LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
+    protected Task(boolean isMarked, String description, LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
         if (description == null || description.isBlank() || description.contains("|")
                 || description.chars().anyMatch(character -> Character.isISOControl(character) && character != '\t')) {
             throw new IllegalArgumentException("Task descriptions must be nonblank "
@@ -40,14 +40,14 @@ public abstract class Task {
         if (lastMarkedAt != null) {
             validateDate(lastMarkedAt.toLocalDate());
         }
-        this.marked = marked;
+        this.isMarked = isMarked;
         this.description = description;
         this.createdAt = createdAt;
         this.lastMarkedAt = lastMarkedAt;
     }
 
     public boolean isMarked() {
-        return this.marked;
+        return this.isMarked;
     }
 
     public String getDescription() {
@@ -103,7 +103,7 @@ public abstract class Task {
             throw new DateTimeException("Oops! This task's creation time is in the future. "
                     + "Check your system clock or correct the saved timestamp and restart Fifi.");
         }
-        this.marked = true;
+        this.isMarked = true;
         this.lastMarkedAt = completionTime;
     }
 
@@ -111,7 +111,7 @@ public abstract class Task {
      * Marks this task as not done.
      */
     public void unmark() {
-        this.marked = false;
+        this.isMarked = false;
     }
 
     private String formatTimestamp(LocalDateTime timestamp) {

@@ -14,12 +14,12 @@ public class Deadline extends Task {
     /**
      * Creates a deadline task with its completion status, description, and due date.
      *
-     * @param marked whether the deadline has been completed
+     * @param isMarked whether the deadline has been completed
      * @param description description of the deadline
      * @param dueDate date when the deadline is due
      */
-    public Deadline(boolean marked, String description, LocalDate dueDate) {
-        super(marked, description);
+    public Deadline(boolean isMarked, String description, LocalDate dueDate) {
+        super(isMarked, description);
         validateDate(dueDate);
         this.dueDate = dueDate;
     }
@@ -27,15 +27,15 @@ public class Deadline extends Task {
     /**
      * Creates a deadline using timestamps loaded from storage.
      *
-     * @param marked whether the deadline has been completed
+     * @param isMarked whether the deadline has been completed
      * @param description description of the deadline
      * @param dueDate date when the deadline is due
      * @param createdAt exact time when the deadline was created, or null when unknown
      * @param lastMarkedAt exact time when the deadline was last completed, or null when never completed or unknown
      */
-    public Deadline(boolean marked, String description, LocalDate dueDate,
+    public Deadline(boolean isMarked, String description, LocalDate dueDate,
             LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
-        super(marked, description, createdAt, lastMarkedAt);
+        super(isMarked, description, createdAt, lastMarkedAt);
         validateDate(dueDate);
         this.dueDate = dueDate;
     }

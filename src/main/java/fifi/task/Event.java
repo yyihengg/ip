@@ -15,13 +15,13 @@ public class Event extends Task {
     /**
      * Creates an event task with its completion status, description, start date, and end date.
      *
-     * @param marked whether the event has been completed
+     * @param isMarked whether the event has been completed
      * @param description description of the event
      * @param start date when the event starts
      * @param end date when the event ends
      */
-    public Event(boolean marked, String description, LocalDate start, LocalDate end) {
-        super(marked, description);
+    public Event(boolean isMarked, String description, LocalDate start, LocalDate end) {
+        super(isMarked, description);
         validateRange(start, end);
         this.start = start;
         this.end = end;
@@ -30,16 +30,16 @@ public class Event extends Task {
     /**
      * Creates an event using timestamps loaded from storage.
      *
-     * @param marked whether the event has been completed
+     * @param isMarked whether the event has been completed
      * @param description description of the event
      * @param start date when the event starts
      * @param end date when the event ends
      * @param createdAt exact time when the event was created, or null when unknown
      * @param lastMarkedAt exact time when the event was last completed, or null when never completed or unknown
      */
-    public Event(boolean marked, String description, LocalDate start, LocalDate end,
+    public Event(boolean isMarked, String description, LocalDate start, LocalDate end,
             LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
-        super(marked, description, createdAt, lastMarkedAt);
+        super(isMarked, description, createdAt, lastMarkedAt);
         validateRange(start, end);
         this.start = start;
         this.end = end;

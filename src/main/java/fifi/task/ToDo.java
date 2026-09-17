@@ -9,23 +9,23 @@ public class ToDo extends Task {
     /**
      * Creates a todo task with its completion status and description.
      *
-     * @param marked whether the todo has been completed
+     * @param isMarked whether the todo has been completed
      * @param description description of the todo
      */
-    public ToDo(boolean marked, String description) {
-        super(marked, description);
+    public ToDo(boolean isMarked, String description) {
+        super(isMarked, description);
     }
 
     /**
      * Creates a todo task using timestamps loaded from storage.
      *
-     * @param marked whether the todo has been completed
+     * @param isMarked whether the todo has been completed
      * @param description description of the todo
      * @param createdAt exact time when the todo was created, or null when unknown
      * @param lastMarkedAt exact time when the todo was last completed, or null when never completed or unknown
      */
-    public ToDo(boolean marked, String description, LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
-        super(marked, description, createdAt, lastMarkedAt);
+    public ToDo(boolean isMarked, String description, LocalDateTime createdAt, LocalDateTime lastMarkedAt) {
+        super(isMarked, description, createdAt, lastMarkedAt);
     }
 
     @Override
