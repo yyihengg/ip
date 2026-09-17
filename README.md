@@ -26,7 +26,7 @@ stats
 ```
 
 Fifi saves changes automatically and highlights command errors with guidance for
-correcting them. Enter `bye` to end the conversation, then close the window.
+correcting them. Enter `bye` to end the conversation and close the window.
 
 See the [full user guide](docs/README.md) for installation instructions, all
 commands, examples, task limits, and saved-data recovery.

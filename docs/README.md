@@ -20,8 +20,8 @@ find tasks, and view completion statistics.
    ```
 
 4. Type a command in the input box and press **Enter** or click **Send**.
-5. Enter `bye` to end the conversation. The GUI stops accepting commands; close
-   the window when you are finished.
+5. Enter `bye` to end the conversation. Fifi shows its farewell and closes the
+   GUI automatically.
 
 ## Features
 
@@ -193,8 +193,8 @@ and counted in a note; they still appear in `list` and overall `stats`.
 
 **Format and example:** `bye`
 
-Fifi says `BaiBai! Hope to see you soon ^^`. In the GUI, input is disabled;
-close the window to exit. In the console, the program exits immediately.
+Fifi says `BaiBai! Hope to see you soon ^^`. The GUI and console then exit
+automatically.
 No extra arguments are allowed: `bye extra` gives an error and keeps the conversation open.
 
 ### Saving your tasks
