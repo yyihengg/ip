@@ -11,7 +11,7 @@ find tasks, and view completion statistics.
 1. Install Java 25. Open a terminal and run `java -version` to check that it reports
    version 25.
 2. Obtain `fifi.jar` by following the repository's
-   [build instructions](../README.md#building-and-running). Place it in the folder
+   [build instructions](https://github.com/yyihengg/ip#building-and-running). Place it in the folder
    where you want to keep your task data.
 3. Open a terminal in that folder and run:
 
@@ -240,8 +240,8 @@ asks you to use `yyyy-MM-dd` instead.
 
 ## Developer resources
 
-See the repository README for [developer setup](../README.md#developer-setup) and
-[testing instructions](../README.md#testing).
+See the repository README for [developer setup](https://github.com/yyihengg/ip#developer-setup) and
+[testing instructions](https://github.com/yyihengg/ip#testing).
 
 ## Acknowledgements
 
