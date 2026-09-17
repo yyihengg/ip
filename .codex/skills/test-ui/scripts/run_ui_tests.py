@@ -143,19 +143,19 @@ def run_case(
 
 
 def clear_data_file(repo_root: Path) -> None:
-    data_file = repo_root / "data" / "duke.txt"
+    data_file = repo_root / "data" / "fifi.txt"
     if data_file.exists():
         data_file.unlink()
 
 
 def write_data_file(repo_root: Path, content: str) -> None:
-    data_file = repo_root / "data" / "duke.txt"
+    data_file = repo_root / "data" / "fifi.txt"
     data_file.parent.mkdir(parents=True, exist_ok=True)
     data_file.write_text(content, encoding="utf-8")
 
 
 def read_data_file(repo_root: Path) -> str:
-    data_file = repo_root / "data" / "duke.txt"
+    data_file = repo_root / "data" / "fifi.txt"
     if not data_file.exists():
         return ""
     return normalize_newlines(data_file.read_text(encoding="utf-8"))

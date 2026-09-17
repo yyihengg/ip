@@ -12,7 +12,7 @@ import javafx.stage.Stage;
  * Loads the FXML interface and connects it to the Fifi chatbot.
  */
 public class Main extends Application {
-    private static final String SAVE_FILE_PATH = "data/duke.txt";
+    private static final String SAVE_FILE_PATH = "data/fifi.txt";
     private final Fifi fifi;
 
     /**

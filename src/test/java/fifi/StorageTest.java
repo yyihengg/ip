@@ -41,7 +41,7 @@ public class StorageTest {
 
     @Test
     public void loadTasks_savedTodoDeadlineAndEvent_matchingTaskTypesReturned() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Files.writeString(dataFile, """
                 T | 1 | read book
                 D | 0 | return book | 2019-12-02
@@ -78,7 +78,7 @@ public class StorageTest {
 
     @Test
     public void loadTasks_unknownTaskCode_exceptionThrownAndLaterValidDataLoads() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Storage storage = new Storage(dataFile.toString());
 
         Files.writeString(dataFile, "T | 0 | read book");
@@ -94,7 +94,7 @@ public class StorageTest {
 
     @Test
     public void saveTasks_newParentDirectory_dataFileCreated() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("data").resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("data").resolve("fifi.txt");
         Storage storage = new Storage(dataFile.toString());
         TaskList tasks = new TaskList(getSampleTasks());
 
@@ -109,7 +109,7 @@ public class StorageTest {
 
     @Test
     public void saveThenLoadTasks_mixedTaskTypes_sameTaskDataReturned() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("data").resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("data").resolve("fifi.txt");
         Storage storage = new Storage(dataFile.toString());
 
         storage.saveTasks(new TaskList(getSampleTasks()));
@@ -129,7 +129,7 @@ public class StorageTest {
 
     @Test
     public void loadTasks_invalidTimestamp_exceptionThrown() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Files.writeString(dataFile, "T | 0 | read book | yesterday | -");
 
         IOException exception = assertThrows(IOException.class, () ->
@@ -141,7 +141,7 @@ public class StorageTest {
 
     @Test
     public void loadTasks_malformedRecords_reportLineAndRecoverAfterCorrection() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Storage storage = new Storage(dataFile.toString());
         String[] invalidRecords = {"T", "T | 2 | work", "T | 0 | ", "T | 0 | work | -",
             "T | 0 | work | - | - | extra", "T | 0 | work|book", "T | 0 | work\u0000book",
@@ -164,7 +164,7 @@ public class StorageTest {
 
     @Test
     public void loadTasks_blankLinesLegacyDuplicatesAndUnknownTimes_remainReadable() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Files.writeString(dataFile, "\nT | 0 | work\nT | 1 | work | - | -\n\n");
         List<Task> tasks = new Storage(dataFile.toString()).loadTasks();
 
@@ -175,7 +175,7 @@ public class StorageTest {
 
     @Test
     public void loadTasks_moreThanLimit_rejectedWhileExactlyOneHundredLoads() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         String validContent = ("T | 0 | legacy duplicate\n").repeat(100);
         Files.writeString(dataFile, validContent);
         Storage storage = new Storage(dataFile.toString());
@@ -190,7 +190,7 @@ public class StorageTest {
 
     @Test
     public void saveTasks_atomicMoveUnsupported_preservesOriginalAndCleansTemporaryFile() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         String original = "T | 0 | original legacy task";
         Files.writeString(dataFile, original);
         Storage storage = new Storage(dataFile.toString()) {

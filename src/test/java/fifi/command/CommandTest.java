@@ -55,7 +55,7 @@ public class CommandTest {
 
     @Test
     public void execute_addTodoCommand_taskAddedAndSaved() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         TaskList tasks = new TaskList();
         Command command = new AddTodoCommand(new ToDo(false, "read book",
                 LocalDateTime.of(2025, 1, 1, 9, 0), null));
@@ -68,7 +68,7 @@ public class CommandTest {
 
     @Test
     public void execute_addDeadlineCommand_deadlineAddedAndSaved() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         TaskList tasks = new TaskList();
         Command command = new AddDeadlineCommand(new Deadline(false, "return book", LocalDate.of(2019, 12, 2),
                 LocalDateTime.of(2019, 11, 30, 9, 0), null));
@@ -81,7 +81,7 @@ public class CommandTest {
 
     @Test
     public void execute_addEventCommand_eventAddedAndSaved() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         TaskList tasks = new TaskList();
         Command command = new AddEventCommand(new Event(false, "meeting", LocalDate.of(2019, 12, 2),
                 LocalDate.of(2019, 12, 4), LocalDateTime.of(2019, 12, 1, 10, 0), null));
@@ -94,7 +94,7 @@ public class CommandTest {
 
     @Test
     public void execute_parsedEventWithWhitespace_trimmedFieldsAddedAndSaved() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         TaskList tasks = new TaskList();
         Command command = Parser.parse("event   team meeting   /from   2025-10-01   /to   2025-10-03   ");
 
@@ -113,7 +113,7 @@ public class CommandTest {
     @Test
     public void execute_taskDescriptionsContainingCommandWords_fullDescriptionsSavedAfterInvalidInputs()
             throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         TaskList tasks = new TaskList();
         Ui ui = new Ui();
         Storage storage = new Storage(dataFile.toString());
@@ -145,7 +145,7 @@ public class CommandTest {
 
     @Test
     public void execute_markCommand_taskMarkedAndSaved() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         TaskList tasks = new TaskList(getSampleTasks());
 
         new MarkCommand(0).execute(tasks, new Ui(), new Storage(dataFile.toString()));
@@ -158,7 +158,7 @@ public class CommandTest {
     @Test
     public void execute_brokenMarkTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Storage storage = new Storage(dataFile.toString());
         TaskList tasks = new TaskList();
         tasks.add(new ToDo(false, "read book") {
@@ -187,7 +187,7 @@ public class CommandTest {
 
     @Test
     public void execute_unmarkCommand_taskUnmarkedAndSaved() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         ArrayList<Task> markedTasks = new ArrayList<>();
         markedTasks.add(new ToDo(true, "read book", LocalDateTime.of(2019, 11, 29, 8, 0),
                 LocalDateTime.of(2019, 12, 1, 17, 0)));
@@ -206,7 +206,7 @@ public class CommandTest {
     @Test
     public void execute_brokenUnmarkTask_assertionPreventsSavingAndSuccessResponse() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Storage storage = new Storage(dataFile.toString());
         TaskList tasks = new TaskList();
         tasks.add(new ToDo(true, "read book") {
@@ -235,7 +235,7 @@ public class CommandTest {
 
     @Test
     public void execute_deleteCommand_taskDeletedAndSaved() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         TaskList tasks = new TaskList(getSampleTasks());
 
         new DeleteCommand(1).execute(tasks, new Ui(), new Storage(dataFile.toString()));
@@ -337,7 +337,7 @@ public class CommandTest {
     @Test
     public void execute_failedSave_preservesTasksTimestampsAndOutputThenAllowsRetry() throws Exception {
         ByteArrayOutputStream output = replaceSystemOut();
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Storage workingStorage = new Storage(dataFile.toString());
         Storage failingStorage = new Storage(dataFile.toString()) {
             @Override

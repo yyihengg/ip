@@ -15,8 +15,8 @@ Record all UI test cases in `test/ui-test-plan.md`. Each test case must include:
 - `Aim:` explaining what the test checks
 - `Inputs:` followed by a fenced `text` block containing the exact commands to type
 - `Expected output:` followed by a fenced `text` block containing the exact expected console output
-- optional `Initial data file:` followed by a fenced `text` block containing the starting `data/duke.txt` contents
-- optional `Expected data file:` followed by a fenced `text` block containing the expected `data/duke.txt` contents after the run
+- optional `Initial data file:` followed by a fenced `text` block containing the starting `data/fifi.txt` contents
+- optional `Expected data file:` followed by a fenced `text` block containing the expected `data/fifi.txt` contents after the run
 
 Use this shape:
 
@@ -39,7 +39,7 @@ full expected console output
 
 Expected data file:
 ```text
-full expected data/duke.txt contents
+full expected data/fifi.txt contents
 ```
 ````
 

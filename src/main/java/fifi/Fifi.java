@@ -109,7 +109,7 @@ public class Fifi {
      * @param args command line arguments supplied by Java
      */
     public static void main(String[] args) {
-        new Fifi("data/duke.txt").run();
+        new Fifi("data/fifi.txt").run();
     }
 
     /**

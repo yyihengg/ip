@@ -14,7 +14,7 @@
         <VBox spacing="4.0" styleClass="chat-header"
               AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <Label text="Fifi" styleClass="title" />
-            <Label text="A little clarity for your day." styleClass="subtitle" />
+            <Label text="Your tasks, deadlines, and events in one chat." styleClass="subtitle" />
         </VBox>
         <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
                     vvalue="1.0" AnchorPane.topAnchor="82.0" AnchorPane.bottomAnchor="72.0"

@@ -199,9 +199,9 @@ No extra arguments are allowed: `bye extra` gives an error and keeps the convers
 
 ### Saving your tasks
 
-Fifi automatically saves successful task changes to `data/duke.txt` in the folder
-where you launch it, and loads them next time. The legacy filename keeps existing
-saves compatible. A missing file is normal; Fifi creates it when needed.
+Fifi automatically saves successful task changes to `data/fifi.txt` in the folder
+where you launch it, and loads them next time. A missing file is normal; Fifi
+creates it when needed.
 
 Launch from the same folder each time to use the same data. Back up the file before
 editing it manually or if you want a recovery copy before deleting tasks.

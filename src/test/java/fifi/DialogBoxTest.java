@@ -58,7 +58,7 @@ public class DialogBoxTest {
     @Test
     public void getFifiDialog_errorThenSuccess_onlyErrorHasHighlight() throws Exception {
         runOnJavaFxThread(() -> {
-            Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+            Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
             WritableImage avatar = new WritableImage(1, 1);
             DialogBox error = DialogBox.getFifiDialog(fifi.getChatResponse("blah"), avatar);
             DialogBox success = DialogBox.getFifiDialog(fifi.getChatResponse("todo Oops! read book"), avatar);
@@ -91,7 +91,7 @@ public class DialogBoxTest {
     @Test
     public void getFifiDialog_validThenInvalidDate_messageAndErrorStatusMatch() throws Exception {
         runOnJavaFxThread(() -> {
-            Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+            Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
             WritableImage avatar = new WritableImage(1, 1);
             DialogBox success = DialogBox.getFifiDialog(fifi.getChatResponse("list"), avatar);
             DialogBox error = DialogBox.getFifiDialog(fifi.getChatResponse("show 2025-02-30"), avatar);
@@ -119,7 +119,7 @@ public class DialogBoxTest {
 
     @Test
     public void start_corruptedSaveFile_startupAndBlockedCommandAreHighlighted() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Files.writeString(dataFile, "T");
         Fifi fifi = new Fifi(dataFile.toString());
         runOnJavaFxThread(() -> {
@@ -151,7 +151,7 @@ public class DialogBoxTest {
 
     @Test
     public void start_validThenInvalidCommand_packagedAvatarsRemainCorrect() throws Exception {
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
         runOnJavaFxThread(() -> {
             Stage stage = new Stage();
             stage.setOpacity(0);
@@ -191,7 +191,7 @@ public class DialogBoxTest {
 
     @Test
     public void start_fxmlActions_preservesInteraction() throws Exception {
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
         runOnJavaFxThread(() -> {
             Stage stage = new Stage();
             stage.setOpacity(0);

@@ -35,7 +35,7 @@ public class FifiTest {
         System.setIn(new ByteArrayInputStream("bye\n".getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
 
         fifi.run();
 
@@ -46,7 +46,7 @@ public class FifiTest {
 
     @Test
     public void getResponse_todoCommand_taskAddedResponseReturned() {
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
 
         String response = fifi.getResponse("todo read book");
 
@@ -59,7 +59,7 @@ public class FifiTest {
 
     @Test
     public void getResponse_invalidCommand_errorResponseReturned() {
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
 
         String response = fifi.getResponse("blah");
 
@@ -71,7 +71,7 @@ public class FifiTest {
 
     @Test
     public void getResponse_statsCommand_multilineStatisticsReturned() {
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
         fifi.getResponse("todo read book");
         fifi.getResponse("mark 1");
 
@@ -85,7 +85,7 @@ public class FifiTest {
 
     @Test
     public void getResponse_malformedTaskNumbers_statePreservedAndCommandsContinue() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Fifi fifi = new Fifi(dataFile.toString());
         fifi.getResponse("todo read book");
         assertTrue(Files.readString(dataFile).startsWith("T | 0 | read book | "));
@@ -115,7 +115,7 @@ public class FifiTest {
 
     @Test
     public void getChatResponse_invalidThenValidCommands_statusAndTaskStateRemainIndependent() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Fifi fifi = new Fifi(dataFile.toString());
         ChatResponse addedTask = fifi.getChatResponse("todo Oops! read book");
         assertFalse(addedTask.isError());
@@ -147,7 +147,7 @@ public class FifiTest {
         System.setIn(new ByteArrayInputStream("todo read book\nlist\n".getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         System.setOut(new PrintStream(output, true, StandardCharsets.UTF_8));
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
 
         fifi.run();
 
@@ -157,7 +157,7 @@ public class FifiTest {
 
     @Test
     public void getChatResponse_emptyTaskList_invalidTaskNumbersDoNotPreventAddingTasks() {
-        Fifi fifi = new Fifi(temporaryDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(temporaryDirectory.resolve("fifi.txt").toString());
         ChatResponse error = fifi.getChatResponse("delete 1");
         assertTrue(error.isError());
         assertEquals("Oops! Your task list is empty. Add a task first.", error.getMessage());
@@ -170,7 +170,7 @@ public class FifiTest {
     @Test
     public void getChatResponse_saveFailure_errorReturnedAndReadCommandsStillWork() throws Exception {
         Path blockedDirectory = temporaryDirectory.resolve("blocked");
-        Fifi fifi = new Fifi(blockedDirectory.resolve("duke.txt").toString());
+        Fifi fifi = new Fifi(blockedDirectory.resolve("fifi.txt").toString());
         Files.writeString(blockedDirectory, "This file prevents creating a directory.");
 
         ChatResponse error = fifi.getChatResponse("todo read book");
@@ -184,12 +184,12 @@ public class FifiTest {
         assertEquals("This file prevents creating a directory.", Files.readString(blockedDirectory));
         Files.delete(blockedDirectory);
         assertFalse(fifi.getChatResponse("todo read book").isError());
-        assertTrue(Files.readString(blockedDirectory.resolve("duke.txt")).contains("T | 0 | read book | "));
+        assertTrue(Files.readString(blockedDirectory.resolve("fifi.txt")).contains("T | 0 | read book | "));
     }
 
     @Test
     public void getChatResponse_duplicateTask_savedDataUnchangedAndDeletionAllowsAddingAgain() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         Fifi fifi = new Fifi(dataFile.toString());
         assertFalse(fifi.getChatResponse("todo read book").isError());
         assertFalse(fifi.getChatResponse("mark 1").isError());
@@ -206,7 +206,7 @@ public class FifiTest {
 
     @Test
     public void startup_corruptedData_reportedAndAllChangesBlockedUntilRestart() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         String corruptedData = "T | 0 | valid task\nT";
         Files.writeString(dataFile, corruptedData);
         Fifi fifi = new Fifi(dataFile.toString());
@@ -235,7 +235,7 @@ public class FifiTest {
 
     @Test
     public void startup_unreadableFile_reportedWithoutReplacingIt() throws Exception {
-        Path dataFile = Files.createDirectory(temporaryDirectory.resolve("duke.txt"));
+        Path dataFile = Files.createDirectory(temporaryDirectory.resolve("fifi.txt"));
         Fifi fifi = new Fifi(dataFile.toString());
 
         assertTrue(fifi.getStartupError().orElseThrow().isError());
@@ -246,7 +246,7 @@ public class FifiTest {
 
     @Test
     public void getChatResponse_creationTimeAfterClock_markRejectedWithoutCorruptingSavedData() throws Exception {
-        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Path dataFile = temporaryDirectory.resolve("fifi.txt");
         LocalDateTime futureTime = LocalDateTime.now().plusYears(1);
         String originalData = "T | 0 | future task | " + futureTime + " | -";
         Files.writeString(dataFile, originalData);

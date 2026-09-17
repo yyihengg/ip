@@ -135,5 +135,5 @@ python3 .codex/skills/test-ui/scripts/run_ui_tests.py --main-class fifi.Fifi
 ```
 
 The runner stops at the first failed case and shows the expected and actual
-output. It temporarily replaces `data/duke.txt` for its test fixtures, so back up
+output. It temporarily replaces `data/fifi.txt` for its test fixtures, so back up
 any personal task data before running it and restore your backup afterwards.
