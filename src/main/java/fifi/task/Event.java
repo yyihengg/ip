@@ -53,6 +53,12 @@ public class Event extends Task {
         return this.end;
     }
 
+    @Override
+    public Task copy() {
+        return new Event(isMarked(), getDescription(), start, end,
+                getCreatedAt().orElse(null), getLastMarkedAt().orElse(null));
+    }
+
     private static void validateRange(LocalDate start, LocalDate end) {
         validateDate(start);
         validateDate(end);

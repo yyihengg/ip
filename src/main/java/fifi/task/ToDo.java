@@ -34,6 +34,11 @@ public class ToDo extends Task {
     }
 
     @Override
+    public Task copy() {
+        return new ToDo(isMarked(), getDescription(), getCreatedAt().orElse(null), getLastMarkedAt().orElse(null));
+    }
+
+    @Override
     public String toString() {
         return String.format("[T]" + super.toString());
     }

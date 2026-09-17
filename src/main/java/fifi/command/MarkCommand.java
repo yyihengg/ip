@@ -1,16 +1,15 @@
 package fifi.command;
 
-import java.io.IOException;
+import java.time.DateTimeException;
 
-import fifi.Storage;
 import fifi.TaskList;
-import fifi.Ui;
+import fifi.exception.InvalidDescriptionException;
 import fifi.task.Task;
 
 /**
  * Marks a task as done.
  */
-public class MarkCommand extends Command {
+public class MarkCommand extends TaskChangingCommand {
     private final int taskIndex;
 
     /**
@@ -23,17 +22,15 @@ public class MarkCommand extends Command {
     }
 
     @Override
-    public boolean changesTasks() {
-        return true;
-    }
-
-    @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
+    protected String[] applyChange(TaskList tasks) throws InvalidDescriptionException {
         Task currentTask = tasks.get(taskIndex);
-        currentTask.mark();
+        try {
+            currentTask.mark();
+        } catch (DateTimeException exception) {
+            throw new InvalidDescriptionException(exception.getMessage());
+        }
         // Every task implementation must honor mark() before its state is saved or reported.
         assert currentTask.isMarked() : "A task must be marked after mark()";
-        storage.saveTasks(tasks);
-        ui.showResponse("Nice! I've marked this task as done:", currentTask.toString());
+        return new String[]{"Nice! I've marked this task as done:", currentTask.toString()};
     }
 }

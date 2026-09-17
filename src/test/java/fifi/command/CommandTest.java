@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -165,6 +166,12 @@ public class CommandTest {
             public void mark() {
                 // Simulates a task implementation that violates the completion contract.
             }
+
+            @Override
+            public Task copy() {
+                // This deliberately immutable test task retains its broken behavior when staged.
+                return this;
+            }
         });
         storage.saveTasks(tasks);
 
@@ -206,6 +213,12 @@ public class CommandTest {
             @Override
             public void unmark() {
                 // Simulates a task implementation that violates the completion contract.
+            }
+
+            @Override
+            public Task copy() {
+                // This deliberately immutable test task retains its broken behavior when staged.
+                return this;
             }
         });
         storage.saveTasks(tasks);
@@ -319,6 +332,49 @@ public class CommandTest {
 
         assertTrue(command.isExit());
         assertOutputContains(output, "BaiBai! Hope to see you soon ^^");
+    }
+
+    @Test
+    public void execute_failedSave_preservesTasksTimestampsAndOutputThenAllowsRetry() throws Exception {
+        ByteArrayOutputStream output = replaceSystemOut();
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Storage workingStorage = new Storage(dataFile.toString());
+        Storage failingStorage = new Storage(dataFile.toString()) {
+            @Override
+            protected void replaceSavedFile(Path temporaryFile) throws IOException {
+                throw new IOException("Simulated denied file replacement");
+            }
+        };
+        String[] commands = {"todo new task", "deadline new task /by 2026-09-20",
+            "event new task /from 2026-09-20 /to 2026-09-21", "mark 1", "unmark 1", "delete 1"};
+        for (String input : commands) {
+            ArrayList<Task> originals = getSampleTasks();
+            if (input.equals("unmark 1")) {
+                originals.get(0).mark();
+            }
+            TaskList tasks = new TaskList(originals);
+            workingStorage.saveTasks(tasks);
+            String originalData = Files.readString(dataFile);
+            String originalDisplay = tasks.toDisplayString();
+            Task firstTask = tasks.get(0);
+            output.reset();
+            Command command = Parser.parse(input);
+
+            assertThrows(IOException.class, () -> command.execute(tasks, new Ui(), failingStorage), input);
+            assertEquals(originalData, Files.readString(dataFile));
+            assertEquals(originalDisplay, tasks.toDisplayString());
+            assertEquals(firstTask, tasks.get(0));
+            assertEquals(originalData, String.join(System.lineSeparator(),
+                    tasks.asList().stream().map(Task::toFileString).toList()));
+            assertEquals("", output.toString(StandardCharsets.UTF_8));
+            try (var files = Files.list(temporaryDirectory)) {
+                assertEquals(1, files.count());
+            }
+
+            command.execute(tasks, new Ui(), workingStorage);
+            assertFalse(originalData.equals(Files.readString(dataFile)), input);
+            assertFalse(output.toString(StandardCharsets.UTF_8).isBlank());
+        }
     }
 
     private Storage getUnusedStorage() {

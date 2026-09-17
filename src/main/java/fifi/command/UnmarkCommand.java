@@ -1,16 +1,12 @@
 package fifi.command;
 
-import java.io.IOException;
-
-import fifi.Storage;
 import fifi.TaskList;
-import fifi.Ui;
 import fifi.task.Task;
 
 /**
  * Marks a task as not done.
  */
-public class UnmarkCommand extends Command {
+public class UnmarkCommand extends TaskChangingCommand {
     private final int taskIndex;
 
     /**
@@ -23,17 +19,11 @@ public class UnmarkCommand extends Command {
     }
 
     @Override
-    public boolean changesTasks() {
-        return true;
-    }
-
-    @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
+    protected String[] applyChange(TaskList tasks) {
         Task currentTask = tasks.get(taskIndex);
         currentTask.unmark();
         // Every task implementation must honor unmark() before its state is saved or reported.
         assert !currentTask.isMarked() : "A task must be unmarked after unmark()";
-        storage.saveTasks(tasks);
-        ui.showResponse("OK, I've marked this task as not done yet:", currentTask.toString());
+        return new String[]{"OK, I've marked this task as not done yet:", currentTask.toString()};
     }
 }

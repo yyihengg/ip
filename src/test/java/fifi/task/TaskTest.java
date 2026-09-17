@@ -117,5 +117,11 @@ public class TaskTest {
         public String toFileString() {
             return String.format("%s | %s", getMarkedStatus(), getDescription());
         }
+
+        @Override
+        public Task copy() {
+            return new TestTask(isMarked(), getDescription(), getCreatedAt().orElse(null),
+                    getLastMarkedAt().orElse(null));
+        }
     }
 }

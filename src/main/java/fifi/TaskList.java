@@ -167,4 +167,24 @@ public class TaskList {
     public List<Task> asList() {
         return List.copyOf(tasks);
     }
+
+    /**
+     * Creates an independent task list for staging changes before saving.
+     *
+     * @return copies of every task, including their completion timestamps
+     */
+    public TaskList copy() {
+        return new TaskList(tasks.stream().map(Task::copy).toList());
+    }
+
+    /**
+     * Replaces this list with a successfully saved candidate list.
+     *
+     * @param candidate the task list whose save succeeded
+     */
+    public void replaceWith(TaskList candidate) {
+        List<Task> savedTasks = candidate.asList();
+        tasks.clear();
+        tasks.addAll(savedTasks);
+    }
 }

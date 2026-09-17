@@ -1391,3 +1391,99 @@ T | 0 | work
 
 T | 1 | work
 ```
+
+## Rejects Invalid Saved Status Without Losing Data
+
+Aim: Check strict saved status validation and task-change protection.
+
+Initial data file:
+```text
+T | 2 | work
+```
+
+Inputs:
+```text
+todo new task
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! I could not load your saved tasks. Invalid task data at line 1: Task status must be 0 or 1.
+Your saved file has not been changed. Fix the data file and restart Fifi before changing tasks.
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! Tasks cannot be changed because saved data could not be loaded. Fix the data file and restart Fifi.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+T | 2 | work
+```
+
+## Rejects Completion Before Creation Time
+
+Aim: Check that a future creation timestamp cannot produce invalid completion history.
+
+Initial data file:
+```text
+T | 0 | future task | 9999-01-01T00:00:00 | -
+```
+
+Inputs:
+```text
+mark 1
+list
+bye
+```
+
+Expected output:
+```text
+_____ _  __ __
+|  ___(_)/ _(_)
+| |_  | | |_| |
+|  _| | |  _| |
+|_|   |_|_| |_|
+____________________________________________________________
+Hello! My name is Fifi ^^
+How may I help?
+____________________________________________________________
+____________________________________________________________
+[ERROR]
+Oops! This task's creation time is in the future. Check your system clock or correct the saved timestamp and restart Fifi.
+____________________________________________________________
+____________________________________________________________
+Here are the tasks in your list:
+1. [T][ ] future task
+____________________________________________________________
+____________________________________________________________
+BaiBai! Hope to see you soon ^^
+____________________________________________________________
+
+```
+
+Expected data file:
+```text
+T | 0 | future task | 9999-01-01T00:00:00 | -
+```

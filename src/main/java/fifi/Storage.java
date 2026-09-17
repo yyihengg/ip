@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -88,17 +89,37 @@ public class Storage {
      * @throws IOException if the file or its parent directory cannot be written
      */
     public void saveTasks(TaskList tasks) throws IOException {
-        Path parentDirectory = filePath.getParent();
-        if (parentDirectory != null) {
-            Files.createDirectories(parentDirectory);
-        }
+        Path parentDirectory = filePath.toAbsolutePath().getParent();
+        Files.createDirectories(parentDirectory);
 
         StringJoiner savedTasks = new StringJoiner(System.lineSeparator());
         for (Task task : tasks.asList()) {
             savedTasks.add(task.toFileString());
         }
 
-        Files.writeString(filePath, savedTasks.toString());
+        Path temporaryFile = Files.createTempFile(parentDirectory, ".fifi-", ".tmp");
+        try {
+            Files.writeString(temporaryFile, savedTasks.toString());
+            replaceSavedFile(temporaryFile);
+        } catch (IOException exception) {
+            try {
+                Files.deleteIfExists(temporaryFile);
+            } catch (IOException cleanupException) {
+                exception.addSuppressed(cleanupException);
+            }
+            throw exception;
+        }
+    }
+
+    /**
+     * Atomically replaces the save file with a complete file in the same directory.
+     * Fails safely when the environment cannot perform an atomic replacement.
+     *
+     * @param temporaryFile the complete candidate save file
+     * @throws IOException if replacement is denied or atomic moves are unsupported
+     */
+    protected void replaceSavedFile(Path temporaryFile) throws IOException {
+        Files.move(temporaryFile, filePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**

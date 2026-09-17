@@ -45,6 +45,12 @@ public class Deadline extends Task {
     }
 
     @Override
+    public Task copy() {
+        return new Deadline(isMarked(), getDescription(), dueDate,
+                getCreatedAt().orElse(null), getLastMarkedAt().orElse(null));
+    }
+
+    @Override
     public boolean hasSameDetails(Task other) {
         return super.hasSameDetails(other) && dueDate.equals(((Deadline) other).dueDate);
     }

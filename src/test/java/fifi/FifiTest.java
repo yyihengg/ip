@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -175,9 +176,15 @@ public class FifiTest {
         ChatResponse error = fifi.getChatResponse("todo read book");
 
         assertTrue(error.isError());
-        assertEquals("Oops! I could not save your tasks to the hard disk.", error.getMessage());
+        assertEquals("Oops! I could not save your tasks to the hard disk. "
+                + "Your task list has not been changed. Check file access and disk space, then try again.",
+                error.getMessage());
         assertFalse(fifi.getChatResponse("list").isError());
+        assertEquals("Here are the tasks in your list:", fifi.getResponse("list"));
         assertEquals("This file prevents creating a directory.", Files.readString(blockedDirectory));
+        Files.delete(blockedDirectory);
+        assertFalse(fifi.getChatResponse("todo read book").isError());
+        assertTrue(Files.readString(blockedDirectory.resolve("duke.txt")).contains("T | 0 | read book | "));
     }
 
     @Test
@@ -235,6 +242,24 @@ public class FifiTest {
         assertTrue(fifi.getChatResponse("todo work").isError());
         assertFalse(fifi.getChatResponse("list").isError());
         assertTrue(Files.isDirectory(dataFile));
+    }
+
+    @Test
+    public void getChatResponse_creationTimeAfterClock_markRejectedWithoutCorruptingSavedData() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        LocalDateTime futureTime = LocalDateTime.now().plusYears(1);
+        String originalData = "T | 0 | future task | " + futureTime + " | -";
+        Files.writeString(dataFile, originalData);
+        Fifi fifi = new Fifi(dataFile.toString());
+        assertTrue(fifi.getStartupError().isEmpty());
+
+        ChatResponse error = fifi.getChatResponse("mark 1");
+        assertTrue(error.isError());
+        assertTrue(error.getMessage().contains("Check your system clock"));
+        assertEquals(originalData, Files.readString(dataFile));
+        assertTrue(fifi.getResponse("list").contains("[T][ ] future task"));
+        assertFalse(fifi.getChatResponse("todo ordinary task").isError());
+        assertTrue(new Storage(dataFile.toString()).loadTasks().get(0).getLastMarkedAt().isEmpty());
     }
 
     private String normalizeLineEndings(String text) {

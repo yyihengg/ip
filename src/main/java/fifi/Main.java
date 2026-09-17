@@ -21,12 +21,23 @@ public class Main extends Application {
 
     private final Image userImage = createAvatarImage(0xFFB7E4C7);
     private final Image fifiImage = createAvatarImage(0xFFFFD6A5);
-    private final Fifi fifi = new Fifi(SAVE_FILE_PATH);
+    private final Fifi fifi;
 
     private ScrollPane scrollPane;
     private VBox dialogContainer;
     private TextField userInput;
     private Button sendButton;
+
+    /**
+     * Creates the graphical interface using the default saved task file.
+     */
+    public Main() {
+        this(new Fifi(SAVE_FILE_PATH));
+    }
+
+    Main(Fifi fifi) {
+        this.fifi = fifi;
+    }
 
     /**
      * Sets up and displays the primary JavaFX stage.

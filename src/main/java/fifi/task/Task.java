@@ -1,5 +1,6 @@
 package fifi.task;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +33,12 @@ public abstract class Task {
         }
         if (createdAt != null && lastMarkedAt != null && lastMarkedAt.isBefore(createdAt)) {
             throw new IllegalArgumentException("Completion time cannot be earlier than creation time.");
+        }
+        if (createdAt != null) {
+            validateDate(createdAt.toLocalDate());
+        }
+        if (lastMarkedAt != null) {
+            validateDate(lastMarkedAt.toLocalDate());
         }
         this.marked = marked;
         this.description = description;
@@ -87,10 +94,17 @@ public abstract class Task {
 
     /**
      * Marks this task as done.
+     *
+     * @throws DateTimeException if the clock is earlier than the known creation time
      */
     public void mark() {
+        LocalDateTime completionTime = LocalDateTime.now();
+        if (createdAt != null && completionTime.isBefore(createdAt)) {
+            throw new DateTimeException("Oops! This task's creation time is in the future. "
+                    + "Check your system clock or correct the saved timestamp and restart Fifi.");
+        }
         this.marked = true;
-        this.lastMarkedAt = LocalDateTime.now();
+        this.lastMarkedAt = completionTime;
     }
 
     /**
@@ -131,6 +145,14 @@ public abstract class Task {
      * @return the saved representation of this task
      */
     public abstract String toFileString();
+
+    /**
+     * Creates an independent task with identical details, status, and timestamps.
+     * Commands change this copy before committing a successful save.
+     *
+     * @return an independent copy of this task
+     */
+    public abstract Task copy();
 
     @Override
     public String toString() {

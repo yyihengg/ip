@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -147,7 +148,8 @@ public class StorageTest {
             "D | 0 | work | 2026-02-30", "D | 0 | work | 0000-01-01",
             "E | 0 | work | 2026-09-21 | 2026-09-20",
             "T | 1 | work | 2026-09-21T09:00:00 | 2026-09-20T09:00:00",
-            "T | 0 | work |  | -"};
+            "T | 0 | work |  | -", "T | 0 | work | 0000-01-01T09:00:00 | -",
+            "T | 0 | work | +10000-01-01T09:00:00 | -"};
         for (String invalidRecord : invalidRecords) {
             String content = "T | 0 | first task\n\n" + invalidRecord;
             Files.writeString(dataFile, content);
@@ -184,6 +186,31 @@ public class StorageTest {
         assertTrue(error.getMessage().startsWith("Invalid task data at line 101:"));
         Files.writeString(dataFile, validContent);
         assertEquals(100, storage.loadTasks().size());
+    }
+
+    @Test
+    public void saveTasks_atomicMoveUnsupported_preservesOriginalAndCleansTemporaryFile() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        String original = "T | 0 | original legacy task";
+        Files.writeString(dataFile, original);
+        Storage storage = new Storage(dataFile.toString()) {
+            @Override
+            protected void replaceSavedFile(Path temporaryFile) throws IOException {
+                throw new AtomicMoveNotSupportedException(temporaryFile.toString(), dataFile.toString(),
+                        "Simulated unsupported atomic move");
+            }
+        };
+
+        assertThrows(AtomicMoveNotSupportedException.class, () -> storage.saveTasks(new TaskList(getSampleTasks())));
+        assertEquals(original, Files.readString(dataFile));
+        try (var files = Files.list(temporaryDirectory)) {
+            assertEquals(1, files.count());
+        }
+        new Storage(dataFile.toString()).saveTasks(new TaskList(getSampleTasks()));
+        assertEquals(3, new Storage(dataFile.toString()).loadTasks().size());
+        try (var files = Files.list(temporaryDirectory)) {
+            assertEquals(1, files.count());
+        }
     }
 
     private ArrayList<Task> getSampleTasks() {

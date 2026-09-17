@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
@@ -17,12 +18,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 /**
  * Tests error presentation and command recovery on the JavaFX application thread.
@@ -107,6 +112,38 @@ public class DialogBoxTest {
             assertFalse(user.getChildren().isEmpty());
             assertNull(user.lookup(".error-box"));
         });
+    }
+
+    @Test
+    public void start_corruptedSaveFile_startupAndBlockedCommandAreHighlighted() throws Exception {
+        Path dataFile = temporaryDirectory.resolve("duke.txt");
+        Files.writeString(dataFile, "T");
+        Fifi fifi = new Fifi(dataFile.toString());
+        runOnJavaFxThread(() -> {
+            Stage stage = new Stage();
+            stage.setOpacity(0);
+            try {
+                new Main(fifi).start(stage);
+                Parent root = stage.getScene().getRoot();
+                root.applyCss();
+                root.layout();
+                assertEquals(1, root.lookupAll(".error-box").size());
+                Label startupMessage = (Label) root.lookup(".error-message");
+                assertTrue(startupMessage.getText().contains("line 1"));
+                TextField input = (TextField) root.lookup(".text-field");
+                input.setText("todo new task");
+                input.fireEvent(new ActionEvent());
+                root.applyCss();
+                root.layout();
+                assertEquals(2, root.lookupAll(".error-box").size());
+                assertTrue(root.lookupAll(".error-message").stream()
+                        .map(node -> ((Label) node).getText())
+                        .anyMatch(message -> message.contains("Tasks cannot be changed")));
+            } finally {
+                stage.close();
+            }
+        });
+        assertEquals("T", Files.readString(dataFile));
     }
 
     private static VBox layOutDialogs(DialogBox... dialogs) {

@@ -1,10 +1,12 @@
 package fifi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
@@ -203,6 +205,27 @@ public class TaskListTest {
         assertThrows(DuplicateTaskException.class, () -> tasks.add(new ToDo(false, "work")));
         tasks.add(new ToDo(false, "different work"));
         assertEquals(3, tasks.size());
+    }
+
+    @Test
+    public void copy_changesToCandidate_doNotChangeOriginalTasksOrTimestamps() {
+        LocalDate date = LocalDate.of(2025, 9, 20);
+        LocalDateTime createdAt = date.atTime(9, 0);
+        ArrayList<Task> originals = new ArrayList<>();
+        originals.add(new ToDo(false, "todo", null, null));
+        originals.add(new Deadline(false, "deadline", date, createdAt, null));
+        originals.add(new Event(false, "event", date, date, createdAt, createdAt));
+        TaskList tasks = new TaskList(originals);
+        TaskList candidate = tasks.copy();
+        for (int i = 0; i < tasks.size(); i++) {
+            assertEquals(tasks.get(i).toFileString(), candidate.get(i).toFileString());
+            candidate.get(i).mark();
+            assertFalse(tasks.get(i).isMarked());
+            assertEquals(originals.get(i), tasks.get(i));
+        }
+        candidate.delete(0);
+        assertEquals(3, tasks.size());
+        assertEquals(2, candidate.size());
     }
 
     private ArrayList<Task> getSampleTasks() {

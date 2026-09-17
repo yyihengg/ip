@@ -49,7 +49,8 @@ public class Fifi {
             } catch (FifiException e) {
                 ui.showError(e.getMessage());
             } catch (IOException e) {
-                ui.showError("Oops! I could not save your tasks to the hard disk.");
+                ui.showError("Oops! I could not save your tasks to the hard disk. "
+                        + "Your task list has not been changed. Check file access and disk space, then try again.");
             } catch (DateTimeException e) {
                 ui.showError("Oops! Please use yyyy-MM-dd for dates.");
             } catch (IndexOutOfBoundsException e) {
@@ -83,7 +84,8 @@ public class Fifi {
         } catch (FifiException e) {
             responseUi.showError(e.getMessage());
         } catch (IOException e) {
-            responseUi.showError("Oops! I could not save your tasks to the hard disk.");
+            responseUi.showError("Oops! I could not save your tasks to the hard disk. "
+                    + "Your task list has not been changed. Check file access and disk space, then try again.");
         } catch (DateTimeException e) {
             responseUi.showError("Oops! Please use yyyy-MM-dd for dates.");
         } catch (IndexOutOfBoundsException e) {

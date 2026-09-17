@@ -1,16 +1,12 @@
 package fifi.command;
 
-import java.io.IOException;
-
-import fifi.Storage;
 import fifi.TaskList;
-import fifi.Ui;
 import fifi.task.Task;
 
 /**
  * Deletes a task from the task list.
  */
-public class DeleteCommand extends Command {
+public class DeleteCommand extends TaskChangingCommand {
     private final int taskIndex;
 
     /**
@@ -23,17 +19,11 @@ public class DeleteCommand extends Command {
     }
 
     @Override
-    public boolean changesTasks() {
-        return true;
-    }
-
-    @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
+    protected String[] applyChange(TaskList tasks) {
         Task removedTask = tasks.delete(taskIndex);
-        storage.saveTasks(tasks);
-        ui.showResponse(
-                "Got it. I've removed this task:",
-                "    " + removedTask,
-                String.format("Now you have %d tasks in the list ^^.", tasks.size()));
+        return new String[]{
+            "Got it. I've removed this task:",
+            "    " + removedTask,
+            String.format("Now you have %d tasks in the list ^^.", tasks.size())};
     }
 }
