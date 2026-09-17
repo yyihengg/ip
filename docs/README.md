@@ -1,3 +1,6 @@
+ # Use of AI-generated work
+From course Week 3 onwards, Young Yi Heng (the developer of this project) used OpenAI Codex to support development of this project. Codex was used to plan changes and discuss ideas before generating code based on Young Yi Heng’s plans and implementation decisions.
+
 # Fifi User Guide
 
 ## Understanding errors
