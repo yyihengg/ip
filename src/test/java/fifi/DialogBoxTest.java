@@ -230,9 +230,8 @@ public class DialogBoxTest {
                 assertFalse(input.isDisabled());
                 input.setText("bye");
                 send.fire();
-                assertTrue(input.isDisabled());
-                assertTrue(send.isDisabled());
                 assertTrue(fifi.isExit());
+                assertFalse(stage.isShowing());
             } finally {
                 stage.close();
             }

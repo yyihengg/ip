@@ -62,8 +62,7 @@ public class MainWindow extends AnchorPane {
         userInput.clear();
         userInput.requestFocus();
         if (fifi.isExit()) {
-            userInput.setDisable(true);
-            sendButton.setDisable(true);
+            userInput.getScene().getWindow().hide();
         }
     }
 }
