@@ -51,29 +51,40 @@ public class StorageTest {
         List<Task> loadedTasks = storage.loadTasks();
 
         assertEquals(3, loadedTasks.size());
+        assertLoadedTaskTypes(loadedTasks);
+        assertLoadedTodo((ToDo) loadedTasks.get(0));
+        assertLoadedDeadline((Deadline) loadedTasks.get(1));
+        assertLoadedEvent((Event) loadedTasks.get(2));
+    }
+
+    private void assertLoadedTaskTypes(List<Task> loadedTasks) {
         assertInstanceOf(ToDo.class, loadedTasks.get(0));
         assertInstanceOf(Deadline.class, loadedTasks.get(1));
         assertInstanceOf(Event.class, loadedTasks.get(2));
+    }
 
-        ToDo todo = (ToDo) loadedTasks.get(0);
-        Deadline deadline = (Deadline) loadedTasks.get(1);
-        Event event = (Event) loadedTasks.get(2);
+    private void assertLoadedTodo(ToDo todo) {
         assertTrue(todo.isMarked());
         assertEquals("read book", todo.getDescription());
         assertTrue(todo.getCreatedAt().isEmpty());
         assertTrue(todo.getLastMarkedAt().isEmpty());
+        assertEquals("[T][X] read book", todo.toString());
+    }
+
+    private void assertLoadedDeadline(Deadline deadline) {
         assertFalse(deadline.isMarked());
         assertEquals("return book", deadline.getDescription());
         assertEquals(LocalDate.of(2019, 12, 2), deadline.getDueDate());
+        assertEquals("[D][ ] return book (by: Dec 02 2019)", deadline.toString());
+    }
+
+    private void assertLoadedEvent(Event event) {
         assertFalse(event.isMarked());
         assertEquals("project meeting", event.getDescription());
         assertEquals(LocalDate.of(2019, 12, 2), event.getStart());
         assertEquals(LocalDate.of(2019, 12, 4), event.getEnd());
-
-        assertEquals("[T][X] read book", loadedTasks.get(0).toString());
-        assertEquals("[D][ ] return book (by: Dec 02 2019)", loadedTasks.get(1).toString());
         assertEquals("[E][ ] project meeting (from: Dec 02 2019 to: Dec 04 2019)",
-                loadedTasks.get(2).toString());
+                event.toString());
     }
 
     @Test
